@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7eed9"/>
+      <stop offset="1" stop-color="#e4d2ab"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#bg)" stroke="#b89a64" stroke-width="2"/>
+  <!-- Temple pediment -->
+  <path d="M8 20 L32 7 L56 20 Z" fill="#3b2f22"/>
+  <path d="M17.5 18 L32 10.6 L46.5 18 Z" fill="#ecdfc2"/>
+  <rect x="7" y="21" width="50" height="4" rx="1" fill="#3b2f22"/>
+  <!-- Serif V -->
+  <path d="M10 28 H25 V31.5 H21.6 L32 52 L42.4 31.5 H39 V28 H54 V31.5 H50.6 L35 59 H29 L13.4 31.5 H10 Z" fill="#241c14"/>
+</svg>

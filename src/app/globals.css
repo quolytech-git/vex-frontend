@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+:root {
+  --bg-page: #faf6ed;
+  --bg-warm: #f2eee2;
+  --bg-sand: #ece9df;
+  --bg-frost: rgba(250, 246, 237, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.07);
+  --bg-glass-subtle: rgba(255, 255, 255, 0.06);
+  --border-glass: rgba(255, 255, 255, 0.14);
+  --border-ink-soft: rgba(33, 45, 61, 0.08);
+  --border-ink-mid: rgba(33, 45, 61, 0.14);
+  --border-ink-dashed: rgba(33, 45, 61, 0.25);
+
+  --ink-primary: #212d3d;
+  --ink-body: rgba(33, 45, 61, 0.7);
+  --ink-muted: #5a6675;
+  --ink-navy: #12222e;
+  --ink-deep: #18222e;
+  --btn-hover: #33445c;
+
+  --accent-terracotta: #9c4930;
+  --accent-forest: #2f6b4f;
+  --accent-stone: #c9c1b2;
+  --accent-stone-light: #d6d0c8;
+  --dark-scrim-drawer: rgba(14, 24, 32, 0.88);
+  --font-serif: "Instrument Serif", "Playfair Display", Georgia, serif;
+  --font-serif-editorial: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --font-serif-calligraphic: "Cormorant Garamond", "Instrument Serif", Georgia, serif;
+  --font-serif-caps: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  --font-typewriter: "Courier Prime", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html {
+  background-color: var(--bg-page);
+  color: var(--ink-primary);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+body {
+  background-color: var(--bg-page);
+  background-image: radial-gradient(rgba(33, 45, 61, 0.03) 1px, transparent 0);
+  background-size: 24px 24px;
+  color: var(--ink-primary);
+  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.font-serif-display {
+  font-family: var(--font-serif), "Instrument Serif", "Playfair Display", Georgia, serif;
+}
+
+.font-serif-display .italic,
+.font-serif-display em,
+.font-serif-calligraphic {
+  font-family: var(--font-serif-calligraphic), "Cormorant Garamond", "Instrument Serif", Georgia, serif;
+  font-style: italic;
+}
+
+.font-serif-editorial {
+  font-family: var(--font-serif-editorial), "Playfair Display", Georgia, serif;
+}
+
+.font-serif-caps {
+  font-family: var(--font-serif-caps), "Cinzel", Georgia, serif;
+  letter-spacing: 0.08em;
+}
+
+.font-mono,
+.font-typewriter {
+  font-family: var(--font-typewriter), "Courier Prime", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@keyframes coach-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-coach-float {
+  animation: coach-float 4.8s ease-in-out infinite;
+}
+
+@keyframes coach-pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(184, 139, 50, 0.9), 0 0 0 8px rgba(184, 139, 50, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(184, 139, 50, 1), 0 0 0 13px rgba(184, 139, 50, 0.12);
+  }
+}
+
+.vex-coach-spotlight {
+  position: relative;
+  z-index: 25 !important;
+  outline: 2px solid #b88b32 !important;
+  outline-offset: 3px;
+  animation: coach-pulse-ring 1.6s ease-in-out infinite !important;
+}
+
+.font-sans-ui {
+  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 34, 46, 0.28) 0%,
+    rgba(18, 34, 46, 0.6) 48%,
+    rgba(18, 34, 46, 0.88) 100%
+  );
+}
+
+.feature-card-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 34, 46, 0.45) 0%,
+    rgba(18, 34, 46, 0.16) 50%,
+    rgba(18, 34, 46, 0.58) 100%
+  );
+}
+
+.pricing-footer-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 34, 46, 0.72) 0%,
+    rgba(18, 34, 46, 0.56) 48%,
+    rgba(18, 34, 46, 0.88) 100%
+  );
+}
+
+.frost-card {
+  background-color: var(--bg-frost);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0px 18px 40px 0px rgba(33, 45, 61, 0.35);
+}
+
+.nav-pill-frosted {
+  background-color: rgba(250, 246, 237, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(33, 45, 61, 0.08);
+  box-shadow: 0px 10px 30px rgba(18, 34, 46, 0.08);
+}
+
+.dashed-panel {
+  border: 1px dashed rgba(33, 45, 61, 0.24);
+  background-color: rgba(250, 246, 237, 0.65);
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 34s linear infinite;
+}
+
+.animate-marquee-cards {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 46s linear infinite;
+}
+
+.marquee-wrapper:hover .animate-marquee-slow,
+.marquee-wrapper:hover .animate-marquee-cards {
+  animation-play-state: paused;
+}
+
+/* Custom scrollbar refinement */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2eee2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9c1b2;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a6675;
+}
+
+/* Hide native scrollbar inside temple sanctuary while preserving wheel/touch scroll */
+.temple-inner-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.temple-inner-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.temple-inner-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
