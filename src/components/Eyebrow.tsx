@@ -10,7 +10,7 @@ export default function Eyebrow({ label, tone = "light" }: EyebrowProps) {
   const isDark = tone === "dark";
 
   return (
-    <div className="inline-flex items-center gap-2.5">
+    <div className="vex-eyebrow inline-flex items-center gap-2.5">
       <span
         className={`flex h-4 w-4 items-center justify-center rounded-full ${
           isDark

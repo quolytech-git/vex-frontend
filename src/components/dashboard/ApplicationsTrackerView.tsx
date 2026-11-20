@@ -1,6 +1,8 @@
 "use client";
 
+import PhonePortal from "@/components/mobile/PhonePortal";
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   type DashboardApplication,
@@ -167,6 +169,13 @@ export default function ApplicationsTrackerView({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"priority" | "company" | "stage">("priority");
   const [selectedId, setSelectedId] = useState<string>(applications[0]?.id || "");
+  // Phone-only layout state: which pane is visible and whether details are open full-screen.
+  const [mobilePane, setMobilePane] = useState<"apps" | "calendar" | "focus">("apps");
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  function openApp(id: string) {
+    setSelectedId(id);
+    setMobileDetailOpen(true);
+  }
   const [activeDrawerTab, setActiveDrawerTab] = useState<
     "readiness" | "extension" | "history" | "inbox"
   >("readiness");
@@ -332,10 +341,10 @@ export default function ApplicationsTrackerView({
       {/* ==================================================================== */}
       {/* 1. CLASSICAL CHRONOMETER & TRACKER BENTO (Adapted from Reference UI) */}
       {/* ==================================================================== */}
-      <div className="rounded-[28px] border border-[#dcd2bd] bg-[#ede8dc] p-4 shadow-[0_14px_40px_rgba(33,45,61,0.06)] sm:p-6">
+      <div className="vex-m-flat rounded-[28px] border border-[#dcd2bd] bg-[#ede8dc] p-4 shadow-[0_14px_40px_rgba(33,45,61,0.06)] sm:p-6">
         {/* Top Century Masterwork & Mode Switcher Strip */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className={`${mobilePane !== "focus" ? "max-lg:hidden" : ""} flex flex-wrap items-center gap-2.5`}>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#cbbda0] bg-[#fffef9] px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#212d3d]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#4c7b59]" />
               {activeCentury.century} · {activeCentury.philosopher}
@@ -380,10 +389,32 @@ export default function ApplicationsTrackerView({
           </div>
         </div>
 
+        {/* Phone: one pane at a time instead of the stacked desktop bento */}
+        <div className="mb-4 grid grid-cols-3 rounded-[14px] bg-[#e7e0cf] p-1 lg:hidden">
+          {(
+            [
+              { id: "apps", label: `Applications (${applications.length})` },
+              { id: "calendar", label: "Calendar" },
+              { id: "focus", label: "Focus" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setMobilePane(t.id)}
+              className={`relative cursor-pointer rounded-[10px] px-1 py-2 text-[12.5px] font-semibold transition-colors ${
+                mobilePane === t.id ? "bg-white text-[#212d3d] shadow-[0_1px_4px_rgba(33,45,61,0.12)]" : "text-[#6f6a5f]"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {/* 2x2 Reference Bento Grid */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* TOP-LEFT: OUTREACH CHRONOMETER (Blurred Renaissance Painting + Olive Stone Glass) */}
-          <div className="relative flex flex-col justify-between overflow-hidden rounded-[26px] border border-[#566a4f]/40 bg-[#465c43] p-5 text-[#fffef9] shadow-[0_18px_40px_-18px_rgba(33,45,61,0.35)] lg:col-span-6">
+          <div className={`${mobilePane !== "focus" ? "max-lg:hidden" : ""} relative flex flex-col justify-between overflow-hidden rounded-[26px] border border-[#566a4f]/40 bg-[#465c43] p-5 text-[#fffef9] shadow-[0_18px_40px_-18px_rgba(33,45,61,0.35)] lg:col-span-6`}>
             <img
               src={activeCentury.image}
               alt={activeCentury.paintingTitle}
@@ -490,14 +521,14 @@ export default function ApplicationsTrackerView({
           </div>
 
           {/* TOP-RIGHT: APPLICATIONS CADENCE & 3-STATE PIPELINE GRAPH */}
-          <div className="flex flex-col justify-between rounded-[26px] border border-[#dcd2bd] bg-[#fffef9] p-5 lg:col-span-6">
+          <div className={`${mobilePane !== "focus" ? "max-lg:hidden" : ""} flex flex-col justify-between rounded-[26px] border border-[#dcd2bd] bg-[#fffef9] p-5 lg:col-span-6`}>
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#212d3d]">
                   Applications Cadence
                 </p>
 
-                <select
+                <select id="applicationstrackerview-select-1" name="applicationstrackerview-select-1" aria-label="applicationstrackerview select 1"
                   value={cadenceFilter}
                   onChange={(e) =>
                     setCadenceFilter(
@@ -566,7 +597,7 @@ export default function ApplicationsTrackerView({
           </div>
 
           {/* ROW 2 LEFT: FULL INTERACTIVE MONTHLY CALENDAR */}
-          <div className="lg:col-span-5">
+          <div className={`${mobilePane !== "calendar" ? "max-lg:hidden" : ""} lg:col-span-5`}>
             <TrackerCalendarCard
               viewYear={viewYear}
               viewMonth={viewMonth}
@@ -580,7 +611,7 @@ export default function ApplicationsTrackerView({
           </div>
 
           {/* ROW 2 RIGHT: SELECTED DAY MILESTONE + WORKING SESSIONS SCHEDULER */}
-          <div className="flex flex-col justify-between gap-4 lg:col-span-7">
+          <div className={`${mobilePane !== "calendar" ? "max-lg:hidden" : ""} flex flex-col justify-between gap-4 lg:col-span-7`}>
             {/* Milestone Card Linked Live to Calendar Selection & Active Role */}
             <div
               onClick={() => activeApp && setSelectedId(activeApp.id)}
@@ -639,13 +670,13 @@ export default function ApplicationsTrackerView({
                     onSubmit={addTrackerSession}
                     className="mb-3 flex flex-col gap-2 rounded-[14px] border border-[#dfd3ba] bg-[#faf6ed] p-2.5 sm:flex-row"
                   >
-                    <input
+                    <input id="applicationstrackerview-input-2" name="applicationstrackerview-input-2" aria-label="applicationstrackerview input 2"
                       type="time"
                       value={newSessionTime}
                       onChange={(e) => setNewSessionTime(e.target.value)}
                       className="rounded-full border border-[#d6c9ae] bg-white px-2.5 py-1 font-mono text-[11.5px] text-[#212d3d]"
                     />
-                    <input
+                    <input id="applicationstrackerview-input-3" name="applicationstrackerview-input-3" aria-label="applicationstrackerview input 3"
                       value={newSessionTitle}
                       onChange={(e) => setNewSessionTitle(e.target.value)}
                       placeholder={`Schedule block on ${formatHumanDate(selectedDateKey)}...`}
@@ -744,7 +775,7 @@ export default function ApplicationsTrackerView({
       </div>
 
       {/* Famous Paintings & Philosophers Gallery Selector for Tracker Context */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={`${mobilePane !== "focus" ? "max-lg:hidden" : ""} grid grid-cols-2 gap-3 lg:grid-cols-4`}>
         {CENTURY_MASTERWORKS.map((work, idx) => {
           const selected = idx === centuryIdx;
           return (
@@ -779,8 +810,8 @@ export default function ApplicationsTrackerView({
       </div>
 
       {/* Search & Sort Filter Bar */}
-      <div className="flex flex-col gap-3 rounded-[18px] border border-[#dad6ca] bg-white p-3.5 sm:flex-row sm:items-center">
-        <input
+      <div className={`${mobilePane !== "apps" ? "max-lg:hidden" : ""} flex flex-col gap-3 rounded-[18px] border border-[#dad6ca] bg-white p-3.5 sm:flex-row sm:items-center`}>
+        <input id="applicationstrackerview-input-4" name="applicationstrackerview-input-4" aria-label="applicationstrackerview input 4"
           type="search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -796,7 +827,7 @@ export default function ApplicationsTrackerView({
             Proof Filter: {submissionFilter.replace(/-/g, " ")} (Clear)
           </button>
         )}
-        <select
+        <select id="applicationstrackerview-select-5" name="applicationstrackerview-select-5" aria-label="applicationstrackerview select 5"
           value={sortBy}
           onChange={(e) =>
             setSortBy(e.target.value as "priority" | "company" | "stage")
@@ -810,7 +841,7 @@ export default function ApplicationsTrackerView({
       </div>
 
       {/* Main Layout: Tracker List/Board + Persistent Side Details & Extension Drawer */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className={`${mobilePane !== "apps" ? "max-lg:hidden" : ""} grid grid-cols-1 gap-6 lg:grid-cols-12`}>
         {/* Left List or Columns */}
         <div className="space-y-3 lg:col-span-5">
           {viewMode === "list" ? (
@@ -819,7 +850,7 @@ export default function ApplicationsTrackerView({
               return (
                 <div
                   key={app.id}
-                  onClick={() => setSelectedId(app.id)}
+                  onClick={() => openApp(app.id)}
                   className={`cursor-pointer rounded-[22px] border p-5 transition-colors ${
                     selected
                       ? "border-[#212d3d] bg-[#ece9df]"
@@ -887,7 +918,7 @@ export default function ApplicationsTrackerView({
                             <button
                               key={item.id}
                               type="button"
-                              onClick={() => setSelectedId(item.id)}
+                              onClick={() => openApp(item.id)}
                               className={`w-full cursor-pointer rounded-[14px] border p-3 text-left transition-colors ${
                                 activeApp?.id === item.id
                                   ? "border-[#212d3d] bg-white"
@@ -914,7 +945,21 @@ export default function ApplicationsTrackerView({
 
         {/* Right Persistent Details & Extension Drawer */}
         {activeApp && (
-          <div className="space-y-5 rounded-[22px] border border-[#dad6ca] bg-white p-6 lg:col-span-7">
+          <PhonePortal when={mobileDetailOpen}>
+          <div className={`space-y-5 rounded-[22px] border border-[#dad6ca] bg-white p-6 lg:col-span-7 ${mobileDetailOpen ? "max-lg:fixed max-lg:inset-0 max-lg:z-[60] max-lg:overflow-y-auto max-lg:rounded-none max-lg:border-0 max-lg:bg-[#f6f1e6] max-lg:px-4 max-lg:pt-0 max-lg:pb-16" : "max-lg:hidden"}`}>
+            {/* Phone: native-style nav bar for the full-screen details */}
+            <div className="vex-glass-bar sticky top-0 z-10 -mx-4 flex items-center gap-2 px-4 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setMobileDetailOpen(false)}
+                className="vex-glass-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[#212d3d]"
+                aria-label="Back to applications"
+              >
+                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+              <p className="min-w-0 flex-1 truncate text-center font-serif-display text-[19px] text-[#212d3d]">{activeApp.company}</p>
+              <span className="w-10" />
+            </div>
             {/* Top Role + Keyboard Accessible Stage Move */}
             <div className="flex flex-col justify-between gap-4 border-b border-[#dad6ca] pb-4 sm:flex-row sm:items-center">
               <div>
@@ -924,8 +969,20 @@ export default function ApplicationsTrackerView({
                 <h2 className="mt-1 font-serif-display text-[26px] leading-tight text-[#212d3d]">
                   {activeApp.title} — {activeApp.company}
                 </h2>
-                <div className="mt-2">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <SubmissionStateBadge state={activeApp.submissionState} />
+                  <Link
+                    href={`/dashboard/applications/${activeApp.id}`}
+                    className="rounded-full border border-[#cfc4a7] bg-[#faf6ed] px-3 py-1 text-[11px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+                  >
+                    Open Full Dossier -&gt;
+                  </Link>
+                  <Link
+                    href={`/dashboard/apply/review/${activeApp.id}`}
+                    className="rounded-full border border-[#212d3d] bg-white px-3 py-1 text-[11px] font-medium text-[#212d3d] hover:bg-[#212d3d] hover:text-[#faf6ed]"
+                  >
+                    Vex Apply Review -&gt;
+                  </Link>
                 </div>
               </div>
 
@@ -933,7 +990,7 @@ export default function ApplicationsTrackerView({
                 <label className="block text-[11px] font-medium uppercase tracking-[0.08em] text-[#5a6675]">
                   Move stage (keyboard accessible)
                 </label>
-                <select
+                <select id="applicationstrackerview-select-6" name="applicationstrackerview-select-6" aria-label="applicationstrackerview select 6"
                   value={activeApp.stage}
                   onChange={(e) =>
                     onUpdateStage(activeApp.id, e.target.value as TrackerStage)
@@ -1032,7 +1089,7 @@ export default function ApplicationsTrackerView({
                     <label className="block text-[12.5px] font-medium text-[#212d3d]">
                       Application notes &amp; contacts
                     </label>
-                    <textarea
+                    <textarea id="applicationstrackerview-textarea-7" name="applicationstrackerview-textarea-7" aria-label="applicationstrackerview textarea 7"
                       rows={3}
                       value={activeApp.notes}
                       onChange={(e) =>
@@ -1049,7 +1106,7 @@ export default function ApplicationsTrackerView({
                     <label className="block text-[12.5px] font-medium text-[#212d3d]">
                       Follow-up reminder date
                     </label>
-                    <input
+                    <input id="applicationstrackerview-input-8" name="applicationstrackerview-input-8" aria-label="applicationstrackerview input 8"
                       type="date"
                       value={activeApp.followUpDate}
                       onChange={(e) =>
@@ -1170,7 +1227,7 @@ export default function ApplicationsTrackerView({
                             Source: {field.source}
                           </p>
                           {field.status === "Needs input" && (
-                            <input
+                            <input id="applicationstrackerview-input-9" name="applicationstrackerview-input-9" aria-label="applicationstrackerview input 9"
                               type="text"
                               value={field.value}
                               onChange={(e) =>
@@ -1335,6 +1392,7 @@ export default function ApplicationsTrackerView({
               </div>
             )}
           </div>
+          </PhonePortal>
         )}
       </div>
 
@@ -1380,7 +1438,7 @@ export default function ApplicationsTrackerView({
                   <label className="text-[11.5px] font-medium text-[#5a6675]">
                     Company Name
                   </label>
-                  <input
+                  <input id="applicationstrackerview-input-10" name="applicationstrackerview-input-10" aria-label="applicationstrackerview input 10"
                     required
                     value={manualCompany}
                     onChange={(e) => setManualCompany(e.target.value)}
@@ -1392,7 +1450,7 @@ export default function ApplicationsTrackerView({
                   <label className="text-[11.5px] font-medium text-[#5a6675]">
                     Job Title
                   </label>
-                  <input
+                  <input id="applicationstrackerview-input-11" name="applicationstrackerview-input-11" aria-label="applicationstrackerview input 11"
                     required
                     value={manualTitle}
                     onChange={(e) => setManualTitle(e.target.value)}
@@ -1404,7 +1462,7 @@ export default function ApplicationsTrackerView({
                   <label className="text-[11.5px] font-medium text-[#5a6675]">
                     Deadline
                   </label>
-                  <input
+                  <input id="applicationstrackerview-input-12" name="applicationstrackerview-input-12" aria-label="applicationstrackerview input 12"
                     value={manualDeadline}
                     onChange={(e) => setManualDeadline(e.target.value)}
                     className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-white px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1414,7 +1472,7 @@ export default function ApplicationsTrackerView({
                   <label className="text-[11.5px] font-medium text-[#5a6675]">
                     Priority
                   </label>
-                  <select
+                  <select id="applicationstrackerview-select-13" name="applicationstrackerview-select-13" aria-label="applicationstrackerview select 13"
                     value={manualPriority}
                     onChange={(e) =>
                       setManualPriority(e.target.value as "High" | "Standard")
@@ -1431,7 +1489,7 @@ export default function ApplicationsTrackerView({
                 <label className="text-[11.5px] font-medium text-[#5a6675]">
                   Application URL (optional)
                 </label>
-                <input
+                <input id="applicationstrackerview-input-14" name="applicationstrackerview-input-14" aria-label="applicationstrackerview input 14"
                   value={manualUrl}
                   onChange={(e) => setManualUrl(e.target.value)}
                   placeholder="https://…"

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import type {
   ExternalAiAppAccess,
   McpActivityEntry,
@@ -11,6 +12,7 @@ import Eyebrow from "@/components/Eyebrow";
 import { ArrowRightIcon } from "@/components/Icons";
 import { GreekTempleWordFrame } from "./IonicColumnDecoration";
 import { StatusPill } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
 
 interface McpAssistantViewProps {
   profile: OnboardingProfileState;
@@ -137,9 +139,19 @@ export default function McpAssistantView({
       inscription="TEMPLE OF ZEUS · VEX ORACLE"
       apexVariant="zeus"
     >
-      <div className="space-y-6 p-5 sm:p-7">
+      <div className="space-y-6 p-4 sm:p-7 max-lg:p-0">
+        <MobilePhilosopherPill
+          name={activeOracle.title}
+          role={activeOracle.subtitle}
+          image={activeOracle.image}
+          quote={activeOracle.maxim}
+          guidance="Describe your task or choose a preset prompt; nothing runs externally until you approve each step."
+          actionLabel="Open MCP Forge"
+          actionHref="/dashboard/integrations/mcp"
+        />
+
         {/* SECTION 1: CLEAN SANCTUARY HERO WITH ZEUS & PHILOSOPHERS */}
-        <section className="rounded-[24px] border border-[#dcd2bd] bg-[#fffef9] p-5 sm:p-6">
+        <section className="vex-m-flat rounded-[24px] border border-[#dcd2bd] bg-[#fffef9] p-5 sm:p-6">
           <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
             {/* Left 7: Simple Controls & Command Bar */}
             <div className="space-y-4 lg:col-span-7">
@@ -192,7 +204,7 @@ export default function McpAssistantView({
 
               {/* Clean Single Command Bar */}
               <div className="space-y-2.5">
-                <textarea
+                <textarea id="mcpassistantview-textarea-1" name="mcpassistantview-textarea-1" aria-label="mcpassistantview textarea 1"
                   rows={2}
                   value={assistantInput}
                   onChange={(e) => setAssistantInput(e.target.value)}
@@ -219,12 +231,24 @@ export default function McpAssistantView({
                   >
                     Manage Tools ({connectedCount})
                   </button>
+                  <Link
+                    href="/dashboard/integrations/mcp"
+                    className="rounded-full border border-[#212d3d] bg-white px-4 py-2 text-[12px] font-medium text-[#212d3d] hover:bg-[#212d3d] hover:text-[#faf6ed]"
+                  >
+                    MCP Workspace &amp; Tools -&gt;
+                  </Link>
+                  <Link
+                    href="/dashboard/settings/integrations"
+                    className="rounded-full border border-[#d6cbb2] bg-[#faf6ed] px-4 py-2 text-[12px] font-medium text-[#212d3d] hover:bg-white"
+                  >
+                    Recruiter Inbox &amp; OAuth
+                  </Link>
                 </div>
               </div>
             </div>
 
-            {/* Right 5: Arched Temple of Zeus & Philosopher Artwork Gallery */}
-            <div className="flex flex-col items-center gap-3 lg:col-span-5">
+            {/* Right 5: Arched Temple of Zeus & Philosopher Artwork Gallery (Desktop Only) */}
+            <div className="hidden flex-col items-center gap-3 lg:col-span-5 lg:flex">
               <div className="w-full max-w-[330px] overflow-hidden rounded-t-[165px] rounded-b-[20px] border border-[#cfc2a5] bg-[#e9e0cc] shadow-[0_14px_34px_rgba(33,45,61,0.12)]">
                 <div className="aspect-[4/4.3] w-full overflow-hidden">
                   <img

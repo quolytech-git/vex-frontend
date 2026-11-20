@@ -320,6 +320,8 @@ export default function ProfilePortfolioView({
     "EU / UK Right to Work",
   ]);
   const [newCredential, setNewCredential] = useState("");
+  // Phone-only: which overview tab is visible.
+  const [mPane, setMPane] = useState<"stats" | "growth" | "proof">("stats");
 
   const [education] = useState(
     "BSc Business Computing & Systems · University of Manchester (2:1)"
@@ -705,10 +707,32 @@ export default function ProfilePortfolioView({
               </div>
             </div>
 
+            {/* Phone: split the overview into three focused tabs */}
+            <div className="relative z-20 mt-4 grid grid-cols-3 rounded-[14px] bg-[#e7e0cf] p-1 lg:hidden">
+              {(
+                [
+                  { id: "stats", label: "Stats" },
+                  { id: "growth", label: "Growth" },
+                  { id: "proof", label: "Proof" },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setMPane(t.id)}
+                  className={`cursor-pointer rounded-[10px] py-2 text-[12.5px] font-semibold transition-colors ${
+                    mPane === t.id ? "bg-white text-[#212d3d] shadow-[0_1px_4px_rgba(33,45,61,0.12)]" : "text-[#6f6a5f]"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
             {/* Light 3-Column Bento Grid Around Leonardo Centerpiece */}
             <div className="relative z-20 mt-5 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12">
               {/* LEFT STACK */}
-              <div className="flex flex-col justify-between gap-3.5 lg:col-span-3">
+              <div className={`${mPane !== "stats" ? "max-lg:hidden" : ""} flex flex-col justify-between gap-3.5 lg:col-span-3`}>
                 {/* Readiness Card */}
                 <div className="rounded-[20px] border border-[#e2d9c5] bg-[#fffef9]/95 p-4 shadow-[0_4px_16px_rgba(33,45,61,0.04)]">
                   <div className="flex items-start justify-between">
@@ -795,7 +819,7 @@ export default function ProfilePortfolioView({
               </div>
 
               {/* CENTER: DA VINCI BUST + OVERLAPPING FROSTED TRAJECTORY CARD */}
-              <div className="relative flex min-h-[500px] flex-col justify-between lg:col-span-5">
+              <div className={`${mPane !== "growth" ? "max-lg:hidden" : ""} relative flex min-h-[500px] flex-col justify-between lg:col-span-5`}>
                 <div className="relative flex min-h-[300px] flex-1 items-center justify-center overflow-hidden rounded-[22px] border border-[#e4dac5] bg-gradient-to-b from-[#f3ecdc] to-[#ebe1cb]">
                   <img
                     src="/images/davinci-profile-bust.jpg"
@@ -877,7 +901,7 @@ export default function ProfilePortfolioView({
               </div>
 
               {/* RIGHT STACK */}
-              <div className="flex flex-col justify-between gap-3.5 lg:col-span-4">
+              <div className={`${mPane !== "stats" ? "max-lg:hidden" : ""} flex flex-col justify-between gap-3.5 lg:col-span-4`}>
                 {/* LinkedIn Alignment */}
                 <div className="rounded-[20px] border border-[#e2d9c5] bg-[#fffef9]/95 p-4.5 shadow-[0_4px_16px_rgba(33,45,61,0.04)]">
                   <div className="flex items-start justify-between">
@@ -1044,7 +1068,7 @@ export default function ProfilePortfolioView({
             </div>
 
             {/* LIGHT COMPACT LOWER COMPLEMENT BAR (3 Sleek Additions — Zero Heavy Bloat) */}
-            <div className="relative z-20 mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className={`${mPane !== "proof" ? "max-lg:hidden" : ""} relative z-20 mt-4 grid grid-cols-1 gap-4 md:grid-cols-3`}>
               {/* Component A: Leonardo Polymath Proportion Radar */}
               <div className="flex items-center justify-between gap-3 rounded-[20px] border border-[#e2d9c5] bg-[#fffef9]/95 p-4">
                 <div>
@@ -1099,7 +1123,7 @@ export default function ProfilePortfolioView({
                 </div>
 
                 <form onSubmit={addCredential} className="mt-3 flex gap-1.5">
-                  <input
+                  <input id="profileportfolioview-input-1" name="profileportfolioview-input-1" aria-label="profileportfolioview input 1"
                     value={newCredential}
                     onChange={(e) => setNewCredential(e.target.value)}
                     placeholder="Add credential or license..."
@@ -1167,10 +1191,10 @@ export default function ProfilePortfolioView({
             </div>
 
             {/* Compact 2-Column Discovery Strip: GitHub×Gallery & Ancient Greece Roadmap */}
-            <div className="relative z-20 mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className={`${mPane !== "proof" ? "max-lg:hidden" : ""} relative z-20 mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2`}>
               <div className="flex flex-col justify-between gap-3 rounded-[20px] border border-[#d9ccb2] bg-[#fffef9]/95 p-4 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex shrink-0 -space-x-2">
                     {MUSEUM_PAINTINGS.map((painting) => (
                       <img
                         key={painting.id}
@@ -1180,7 +1204,7 @@ export default function ProfilePortfolioView({
                       />
                     ))}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-[#7a6949]">
                       Academy Gallery · GitHub @{githubHandle}
                     </p>
@@ -1200,7 +1224,7 @@ export default function ProfilePortfolioView({
               </div>
 
               <div className="flex flex-col justify-between gap-3 rounded-[20px] border border-[#d9ccb2] bg-[#fffef9]/95 p-4 text-[#212d3d]">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 max-lg:flex-wrap">
                   <div className="flex min-w-0 items-center gap-3">
                     <img
                       src="/images/greek-philosopher-roadmap.jpg"
@@ -1220,13 +1244,13 @@ export default function ProfilePortfolioView({
                   <button
                     type="button"
                     onClick={() => setActivePill("roadmap")}
-                    className="shrink-0 cursor-pointer rounded-full bg-[#212d3d] px-3.5 py-1.5 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#33445c]"
+                    className="shrink-0 cursor-pointer rounded-full bg-[#212d3d] px-3.5 py-1.5 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#33445c] max-lg:w-full max-lg:py-2.5"
                   >
                     Open Roadmap
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-4">
                   {roadmapEpochs.map((ep, idx) => {
                     const active = idx === activePhaseIdx;
                     return (
@@ -1289,7 +1313,7 @@ export default function ProfilePortfolioView({
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Full name</label>
-                    <input
+                    <input id="profileportfolioview-input-2" name="profileportfolioview-input-2" aria-label="profileportfolioview input 2"
                       value={draft.name}
                       onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1297,7 +1321,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Email</label>
-                    <input
+                    <input id="profileportfolioview-input-3" name="profileportfolioview-input-3" aria-label="profileportfolioview input 3"
                       value={draft.email}
                       onChange={(e) => setDraft({ ...draft, email: e.target.value })}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1305,7 +1329,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Current role</label>
-                    <input
+                    <input id="profileportfolioview-input-4" name="profileportfolioview-input-4" aria-label="profileportfolioview input 4"
                       value={draft.currentRole}
                       onChange={(e) => setDraft({ ...draft, currentRole: e.target.value })}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1313,7 +1337,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Desired target role</label>
-                    <input
+                    <input id="profileportfolioview-input-5" name="profileportfolioview-input-5" aria-label="profileportfolioview input 5"
                       value={draft.targetRole}
                       onChange={(e) => setDraft({ ...draft, targetRole: e.target.value })}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1321,7 +1345,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Work arrangement</label>
-                    <select
+                    <select id="profileportfolioview-select-6" name="profileportfolioview-select-6" aria-label="profileportfolioview select 6"
                       value={draft.workMode}
                       onChange={(e) => setDraft({ ...draft, workMode: e.target.value })}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1333,7 +1357,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Target salary band</label>
-                    <input
+                    <input id="profileportfolioview-input-7" name="profileportfolioview-input-7" aria-label="profileportfolioview input 7"
                       value={salaryTarget}
                       onChange={(e) => setSalaryTarget(e.target.value)}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1341,7 +1365,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Languages</label>
-                    <input
+                    <input id="profileportfolioview-input-8" name="profileportfolioview-input-8" aria-label="profileportfolioview input 8"
                       value={languages}
                       onChange={(e) => setLanguages(e.target.value)}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1349,7 +1373,7 @@ export default function ProfilePortfolioView({
                   </div>
                   <div>
                     <label className="text-[11.5px] font-medium text-[#5a6675]">Certifications</label>
-                    <input
+                    <input id="profileportfolioview-input-9" name="profileportfolioview-input-9" aria-label="profileportfolioview input 9"
                       value={certifications}
                       onChange={(e) => setCertifications(e.target.value)}
                       className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -1368,7 +1392,7 @@ export default function ProfilePortfolioView({
                     <label className="text-[11.5px] font-medium text-[#5a6675]">
                       Verified experience facts (shared across CVs &amp; autofill)
                     </label>
-                    <textarea
+                    <textarea id="profileportfolioview-textarea-10" name="profileportfolioview-textarea-10" aria-label="profileportfolioview textarea 10"
                       rows={2}
                       value={draft.cvExcerpt}
                       onChange={(e) => setDraft({ ...draft, cvExcerpt: e.target.value })}
@@ -1541,7 +1565,7 @@ export default function ProfilePortfolioView({
                           </h3>
                           <div className="mt-1 flex items-center gap-2">
                             {editingHandle ? (
-                              <input
+                              <input id="profileportfolioview-input-11" name="profileportfolioview-input-11" aria-label="profileportfolioview input 11"
                                 value={githubHandle}
                                 onChange={(e) => setGithubHandle(e.target.value)}
                                 onBlur={() => setEditingHandle(false)}
@@ -1989,13 +2013,13 @@ export default function ProfilePortfolioView({
                       onSubmit={addPortfolioProject}
                       className="flex flex-col gap-2.5 rounded-[18px] border border-[#dcd2bd] bg-[#fffef9] p-4 sm:flex-row sm:items-center"
                     >
-                      <input
+                      <input id="profileportfolioview-input-12" name="profileportfolioview-input-12" aria-label="profileportfolioview input 12"
                         value={newProjTitle}
                         onChange={(e) => setNewProjTitle(e.target.value)}
                         placeholder="Repository or proof title..."
                         className="flex-1 rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3.5 py-2 text-[12.5px] focus:border-[#212d3d] focus:outline-none"
                       />
-                      <input
+                      <input id="profileportfolioview-input-13" name="profileportfolioview-input-13" aria-label="profileportfolioview input 13"
                         value={newProjOutcome}
                         onChange={(e) => setNewProjOutcome(e.target.value)}
                         placeholder="Observable outcome & verification metric..."
@@ -2134,7 +2158,7 @@ export default function ProfilePortfolioView({
                     </div>
 
                     <form onSubmit={addRoadmapTask} className="mt-3 flex flex-col gap-2 sm:flex-row">
-                      <input
+                      <input id="profileportfolioview-input-14" name="profileportfolioview-input-14" aria-label="profileportfolioview input 14"
                         value={newMilestoneText}
                         onChange={(e) => setNewMilestoneText(e.target.value)}
                         placeholder={`Add milestone in ${activeEpoch.shortLabel}...`}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   type CourseItem,
   MARKET_DEMAND_BENCHMARKS,
@@ -472,12 +473,24 @@ export default function LearningSkillsView({
               >
                 +15m Log Study
               </button>
+              <Link
+                href="/dashboard/learning/catalog"
+                className="rounded-full border border-[#cfc2a5] bg-white px-3.5 py-1 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+              >
+                Full Course Catalog -&gt;
+              </Link>
+              <Link
+                href="/dashboard/learning/assessments"
+                className="rounded-full bg-[#212d3d] px-3.5 py-1 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#314158]"
+              >
+                Athena Skill Assessments
+              </Link>
             </div>
           </div>
 
           {/* Right: Aristotle Tutoring Alexander the Great */}
           <div className="flex justify-start lg:col-span-4 lg:justify-end">
-            <div className="flex w-full max-w-[310px] items-center gap-3.5 rounded-[20px] border border-[#d6cbb2] bg-[#fffef9] p-3 shadow-xs">
+            <div className="flex w-full items-center gap-3.5 rounded-[20px] lg:max-w-[310px] border border-[#d6cbb2] bg-[#fffef9] p-3 shadow-xs">
               <img
                 src="/images/aristotle-alexander-academy.jpg"
                 alt="Aristotle tutoring Alexander the Great at Mieza"
@@ -756,7 +769,7 @@ export default function LearningSkillsView({
                 }}
                 className="flex gap-2"
               >
-                <input
+                <input id="learningskillsview-input-1" name="learningskillsview-input-1" aria-label="learningskillsview input 1"
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
                   placeholder="Write takeaway here..."
@@ -815,7 +828,7 @@ export default function LearningSkillsView({
                 onSubmit={handleCreateHomework}
                 className="flex flex-col gap-2 rounded-[14px] border border-[#dcd2bd] bg-[#faf6ed] p-3 sm:flex-row"
               >
-                <input
+                <input id="learningskillsview-input-2" name="learningskillsview-input-2" aria-label="learningskillsview input 2"
                   required
                   value={newHwTitle}
                   onChange={(e) => setNewHwTitle(e.target.value)}
@@ -994,7 +1007,7 @@ export default function LearningSkillsView({
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer rounded-[18px] border-2 border-dashed border-[#cfc2a5] bg-[#faf6ed] p-6 text-center transition-colors hover:border-[#212d3d]"
             >
-              <input
+              <input id="learningskillsview-input-3" name="learningskillsview-input-3" aria-label="learningskillsview input 3"
                 ref={fileInputRef}
                 type="file"
                 accept=".pdf,application/pdf,.txt,.md"
@@ -1016,7 +1029,7 @@ export default function LearningSkillsView({
             </div>
 
             <div className="space-y-2">
-              <textarea
+              <textarea id="learningskillsview-textarea-4" name="learningskillsview-textarea-4" aria-label="learningskillsview textarea 4"
                 rows={2}
                 value={pdfExcerpt}
                 onChange={(e) => setPdfExcerpt(e.target.value)}
@@ -1149,7 +1162,7 @@ export default function LearningSkillsView({
               }}
               className="flex gap-2 border-t border-[#ece5d5] bg-[#faf6ed] p-4"
             >
-              <input
+              <input id="learningskillsview-input-5" name="learningskillsview-input-5" aria-label="learningskillsview input 5"
                 ref={chatInputRef}
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
@@ -1228,7 +1241,7 @@ export default function LearningSkillsView({
                   </button>
                   {challengeOpenId === sk.id && (
                     <div className="flex gap-2 pt-1">
-                      <input
+                      <input id="learningskillsview-input-6" name="learningskillsview-input-6" aria-label="learningskillsview input 6"
                         value={challengeNote}
                         onChange={(e) => setChallengeNote(e.target.value)}
                         placeholder="Add proof link or correction..."

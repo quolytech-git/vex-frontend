@@ -3,37 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  type AlertItem,
-  type CourseItem,
-  type CvDiffSuggestion,
-  type CvQualityFlag,
-  type DailyPlanTask,
-  type DashboardApplication,
-  type DashboardJob,
-  type DashboardSectionId,
-  type ExternalAiAppAccess,
-  INITIAL_ALERTS,
-  INITIAL_APPLICATIONS,
-  INITIAL_CONTACTS,
-  INITIAL_COURSES,
-  INITIAL_CV_DIFFS,
-  INITIAL_CV_QUALITY_FLAGS,
-  INITIAL_DAILY_PLAN,
-  INITIAL_EXTERNAL_AI_APPS,
-  INITIAL_JOBS,
-  INITIAL_MCP_ACTIVITY,
-  INITIAL_MCP_CONNECTIONS,
-  INITIAL_SKILLS,
-  type McpActivityEntry,
-  type McpConnection,
-  type NetworkContact,
-  type OnboardingProfileState,
-  type SkillRecord,
-  type SubmissionState,
-  type SubscriptionPlan,
-  type TrackerStage,
-} from "@/data/dashboard";
+import type { DashboardApplication, DashboardJob, DashboardSectionId } from "@/data/dashboard";
+import { useVexWorkspace } from "@/lib/vex-store";
 import { ArrowRightIcon, VexLogoMark } from "@/components/Icons";
 import DashboardOverview from "./DashboardOverview";
 import JobsDiscoveryView from "./JobsDiscoveryView";
@@ -48,6 +19,8 @@ import AlertsView from "./AlertsView";
 import SettingsPrivacyView from "./SettingsPrivacyView";
 import PhilosopherCoachGuide from "./PhilosopherCoachGuide";
 import { IonicTemplePortico } from "./IonicColumnDecoration";
+import MobileHeader from "@/components/mobile/MobileHeader";
+import MobileTabBar, { type PrimaryMobileTab } from "@/components/mobile/MobileTabBar";
 
 type PillarLabel =
   | "COMMAND"
@@ -106,194 +79,109 @@ const NAV_GROUPS: {
 
 const NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 
-const DEFAULT_PROFILE: OnboardingProfileState = {
-  name: "Candidate",
-  email: "candidate@vex.careers",
-  intakeMethod: "upload",
-  currentRole: "Senior Product Analyst",
-  targetRole: "Product Operations Lead",
-  track: "SaaS & AI Operations",
-  workMode: "Hybrid",
-  priorities: ["cv-diffs", "mock-prep"],
-  cvExcerpt: "",
-  agreedBoundary: true,
-};
-
 export default function DashboardShell() {
   const [section, setSection] = useState<DashboardSectionId>("overview");
   const [navExpanded, setNavExpanded] = useState(true);
-  const [moreDrawerOpen, setMoreDrawerOpen] = useState(false);
 
-  const [profile, setProfile] = useState<OnboardingProfileState>(DEFAULT_PROFILE);
-  const [jobs] = useState<DashboardJob[]>(INITIAL_JOBS);
-  const [savedJobIds, setSavedJobIds] = useState<string[]>([
-    "job-northbridge",
-    "job-aldermere",
-  ]);
-  const [hiddenJobIds, setHiddenJobIds] = useState<string[]>([]);
-  const [applications, setApplications] =
-    useState<DashboardApplication[]>(INITIAL_APPLICATIONS);
-  const [diffs, setDiffs] = useState<CvDiffSuggestion[]>(INITIAL_CV_DIFFS);
-  const [flags, setFlags] = useState<CvQualityFlag[]>(INITIAL_CV_QUALITY_FLAGS);
-  const [skills, setSkills] = useState<SkillRecord[]>(INITIAL_SKILLS);
-  const [courses, setCourses] = useState<CourseItem[]>(INITIAL_COURSES);
-  const [dailyTasks, setDailyTasks] =
-    useState<DailyPlanTask[]>(INITIAL_DAILY_PLAN);
-  const [connections, setConnections] = useState<McpConnection[]>(
-    INITIAL_MCP_CONNECTIONS
-  );
-  const [externalApps, setExternalApps] = useState<ExternalAiAppAccess[]>(
-    INITIAL_EXTERNAL_AI_APPS
-  );
-  const [activityLog, setActivityLog] =
-    useState<McpActivityEntry[]>(INITIAL_MCP_ACTIVITY);
-  const [alerts, setAlerts] = useState<AlertItem[]>(INITIAL_ALERTS);
-  const [contacts, setContacts] = useState<NetworkContact[]>(INITIAL_CONTACTS);
-  const [mockSessionsCount, setMockSessionsCount] = useState(1);
-  const [plan, setPlan] = useState<SubscriptionPlan>("Pro");
-  const [coachOpen, setCoachOpen] = useState(false);
+  const {
+    profile,
+    plan,
+    jobs,
+    savedJobIds,
+    hiddenJobIds,
+    applications,
+    diffs,
+    flags,
+    skills,
+    courses,
+    dailyTasks,
+    connections,
+    externalApps,
+    activityLog,
+    alerts,
+    contacts,
+    mockSessionsCount,
+    coachOpen,
+    setCoachOpen,
+    saveProfile,
+    changePlan,
+    resetWorkspaceData,
+    toggleSaveJob,
+    hideJob,
+    unhideJob,
+    prepareApplication,
+    updateApplication,
+    decideDiff,
+    resolveFlag,
+    challengeSkill,
+    upgradeSkillDemonstrated,
+    toggleTask,
+    toggleConnection,
+    toggleExternalApp,
+    clearActivity,
+    recordAssistantRun,
+    dismissAlert,
+    addContact,
+    logInvitation,
+    addInterviewSession,
+  } = useVexWorkspace();
 
-  // Auto-start the guided tour on a user's first visit only.
+  // Support deep links back from nested routes (e.g. /dashboard?section=jobs)
   useEffect(() => {
     try {
-      if (!window.localStorage.getItem("vex_coach_tour_done")) setCoachOpen(true);
+      const qs = new URLSearchParams(window.location.search).get("section");
+      if (
+        qs &&
+        [
+          "overview",
+          "jobs",
+          "documents",
+          "profile",
+          "applications",
+          "network",
+          "interviews",
+          "learning",
+          "mcp",
+          "alerts",
+          "settings",
+        ].includes(qs)
+      ) {
+        setSection(qs as DashboardSectionId);
+      }
     } catch {
-      setCoachOpen(true);
+      // ignore
     }
   }, []);
 
+  // Phones get snappier, app-like page switches; desktop keeps its slower glide.
+  const [isPhone, setIsPhone] = useState(false);
   useEffect(() => {
-    try {
-      const onboardingRaw = window.localStorage.getItem("vex_onboarding_profile");
-      const userRaw = window.localStorage.getItem("vex_frontend_user");
-      const storedPlan = window.localStorage.getItem("vex_subscription_plan");
-      if (storedPlan === "Free" || storedPlan === "Pro" || storedPlan === "Ultra") {
-        setPlan(storedPlan);
-      }
-      let merged = { ...DEFAULT_PROFILE };
-      if (userRaw) {
-        const u = JSON.parse(userRaw) as Partial<OnboardingProfileState>;
-        if (u.name) merged.name = u.name;
-        if (u.email) merged.email = u.email;
-      }
-      if (onboardingRaw) {
-        const ob = JSON.parse(onboardingRaw) as Partial<OnboardingProfileState>;
-        merged = {
-          ...merged,
-          ...ob,
-          name: ob.name || merged.name,
-          email: ob.email || merged.email,
-          targetRole: ob.targetRole || merged.targetRole,
-        };
-      }
-      setProfile(merged);
-    } catch {
-      // Pure UI fallback
-    }
+    const mq = window.matchMedia("(max-width: 1023.98px)");
+    const update = () => setIsPhone(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
-
-  function saveProfile(next: OnboardingProfileState) {
-    setProfile(next);
-    try {
-      window.localStorage.setItem(
-        "vex_onboarding_profile",
-        JSON.stringify(next)
-      );
-      window.localStorage.setItem(
-        "vex_frontend_user",
-        JSON.stringify({ name: next.name, email: next.email })
-      );
-    } catch {
-      // Ignore browser storage limits
-    }
-  }
-
-  function resetWorkspaceData() {
-    try {
-      window.localStorage.removeItem("vex_onboarding_profile");
-      window.localStorage.removeItem("vex_frontend_user");
-    } catch {
-      // Ignore
-    }
-    setProfile(DEFAULT_PROFILE);
-    setApplications(INITIAL_APPLICATIONS);
-    setDiffs(INITIAL_CV_DIFFS);
-    setFlags(INITIAL_CV_QUALITY_FLAGS);
-    setSkills(INITIAL_SKILLS);
-    setCourses(INITIAL_COURSES);
-    setAlerts(INITIAL_ALERTS);
-  }
 
   function navigateTo(nextSection: DashboardSectionId) {
     setSection(nextSection);
-    setMoreDrawerOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: isPhone ? "auto" : "smooth" });
   }
 
   function handleToggleSaveJob(jobId: string) {
-    setSavedJobIds((prev) =>
-      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
-    );
+    toggleSaveJob(jobId);
   }
 
   function handleHideJob(jobId: string) {
-    setHiddenJobIds((prev) => (prev.includes(jobId) ? prev : [...prev, jobId]));
+    hideJob(jobId);
   }
 
   function handleUnhideJob(jobId: string) {
-    setHiddenJobIds((prev) => prev.filter((id) => id !== jobId));
+    unhideJob(jobId);
   }
 
   function handlePrepareApplication(job: DashboardJob) {
-    const existing = applications.find((a) => a.jobId === job.id);
-    if (!existing) {
-      const created: DashboardApplication = {
-        id: `app-${Date.now()}`,
-        jobId: job.id,
-        title: job.title,
-        company: job.company,
-        stage: "Prepared",
-        submissionState: "prepared",
-        evidenceText: "Prepared, not submitted — drafted from baseline profile",
-        quietDays: 0,
-        deadline: job.deadline || undefined,
-        priority: "High",
-        cvVariant: `${job.company.split(" ")[0]}_${job.title.split(" ")[0]}_v1 (Draft)`,
-        coverLetterApproved: false,
-        checklist: {
-          cvReviewed: false,
-          letterApproved: false,
-          questionsAnswered: false,
-          fieldsChecked: false,
-        },
-        notes: "",
-        followUpDate: "2026-11-20",
-        history: [
-          {
-            at: "Just now",
-            actor: "Vex Workspace",
-            event: "Prepared application pack from Job Details",
-          },
-        ],
-        extensionFields: [
-          {
-            id: "ef-new-1",
-            label: "Profile identity & email",
-            value: profile.name,
-            source: "Baseline profile",
-            status: "Filled",
-          },
-          {
-            id: "ef-new-2",
-            label: "Role-specific screening answer",
-            value: "",
-            source: "Needs review before continue",
-            status: "Needs input",
-          },
-        ],
-      };
-      setApplications((prev) => [created, ...prev]);
-    }
+    prepareApplication(job);
     navigateTo("applications");
   }
 
@@ -314,22 +202,30 @@ export default function DashboardShell() {
     settings: "11",
   };
 
+  const primaryTab: PrimaryMobileTab | "other" =
+    section === "overview" ||
+    section === "jobs" ||
+    section === "applications" ||
+    section === "learning" ||
+    section === "profile"
+      ? section
+      : "other";
+
   const activeItem = NAV_ITEMS.find((n) => n.id === section) || NAV_ITEMS[0];
 
   return (
-    <div className="relative min-h-screen w-full bg-[#6d828f] text-[#212d3d] pb-20 lg:pb-12">
-      {/* FULL-BLEED ASCII-DITHERED CLOUD HORIZON (Upper Slate Sky -> Dense ASCII Fogs Down Below) */}
+    <div className="vex-app relative min-h-screen w-full bg-[#f6f1e6] text-[#212d3d] pb-28 lg:bg-[#6d828f] lg:pb-12">
+      {/* FULL-BLEED ASCII-DITHERED CLOUD HORIZON — Desktop Only */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-bottom bg-no-repeat"
+        className="pointer-events-none fixed inset-0 z-0 hidden bg-cover bg-bottom bg-no-repeat lg:block"
         style={{
           backgroundImage: "url('/images/vex-ascii-sky.jpg')",
         }}
       />
-      {/* Gentle Upper Atmospheric Luminance + Low Rising Cream Fog Band at Bottom */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0"
+        className="pointer-events-none fixed inset-0 z-0 hidden lg:block"
         style={{
           background:
             "linear-gradient(180deg, rgba(250,246,237,0.48) 0%, rgba(250,246,237,0.14) 36%, rgba(110,130,142,0.06) 62%, rgba(250,246,237,0.38) 100%)",
@@ -337,16 +233,16 @@ export default function DashboardShell() {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-[44vh]"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-0 hidden h-[44vh] lg:block"
         style={{
           background:
             "radial-gradient(ellipse 110% 75% at 50% 100%, rgba(250,246,237,0.72) 0%, rgba(250,246,237,0.34) 48%, rgba(250,246,237,0) 100%)",
         }}
       />
-      {/* Fine Architectural Blueprint Pixel Matrix */}
+      {/* Fine Architectural Blueprint Pixel Matrix — Desktop Only */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 opacity-30"
+        className="pointer-events-none fixed inset-0 z-0 hidden opacity-30 lg:block"
         style={{
           backgroundImage:
             "radial-gradient(rgba(33, 45, 61, 0.22) 1px, transparent 1px)",
@@ -354,8 +250,15 @@ export default function DashboardShell() {
         }}
       />
 
-      {/* FEATHERWEIGHT FLOATING TOP NAVBAR (Limestone Glass, Zero Heavy Bars) */}
-      <header className="sticky top-0 z-30 border-b border-[#dfd7c2]/75 bg-[#faf6ed]/52 backdrop-blur-xl">
+      {/* MOBILE APPLE-STYLE EDITORIAL HEADER (< lg) */}
+      <MobileHeader
+        title={activeItem.label}
+        subtitle={activeItem.sub}
+        onSelectSection={navigateTo}
+      />
+
+      {/* DESKTOP FEATHERWEIGHT FLOATING TOP NAVBAR (Limestone Glass) */}
+      <header className="sticky top-0 z-30 hidden border-b border-[#dfd7c2]/75 bg-[#faf6ed]/52 backdrop-blur-xl lg:block">
         <div className="flex h-[58px] w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* Left: Vex Wordmark + Expand/Compact Rail Control + Open Module Breadcrumb */}
           <div className="flex items-center gap-3.5">
@@ -405,6 +308,20 @@ export default function DashboardShell() {
                 />
               ))}
             </div>
+
+            <Link
+              href="/dashboard/apply"
+              className="hidden cursor-pointer rounded-full border border-white/60 bg-white/55 px-2.5 py-1 font-mono text-[10.5px] font-medium text-[#212d3d] transition-colors hover:bg-white/85 xl:inline-flex"
+            >
+              Vex Apply
+            </Link>
+
+            <Link
+              href="/dashboard/intelligence"
+              className="hidden cursor-pointer rounded-full border border-white/60 bg-white/55 px-2.5 py-1 font-mono text-[10.5px] font-medium text-[#212d3d] transition-colors hover:bg-white/85 xl:inline-flex"
+            >
+              Apollo Intel
+            </Link>
 
             <button
               type="button"
@@ -546,10 +463,10 @@ export default function DashboardShell() {
           <AnimatePresence mode="wait">
             <motion.div
               key={section}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              initial={isPhone ? { opacity: 0, x: 14 } : { opacity: 0, y: 10 }}
+              animate={isPhone ? { opacity: 1, x: 0 } : { opacity: 1, y: 0 }}
+              exit={isPhone ? { opacity: 0, x: -10 } : { opacity: 0, y: -6 }}
+              transition={{ duration: isPhone ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
               {section === "overview" && (
                 <DashboardOverview
@@ -562,48 +479,10 @@ export default function DashboardShell() {
                     unresolvedFlagsCount={unresolvedFlagsCount}
                     mockSessionsCount={mockSessionsCount}
                     dailyTasks={dailyTasks}
-                    onToggleTask={(taskId) =>
-                      setDailyTasks((prev) =>
-                        prev.map((t) =>
-                          t.id === taskId ? { ...t, done: !t.done } : t
-                        )
-                      )
-                    }
+                    onToggleTask={(taskId) => toggleTask(taskId)}
                     onNavigate={navigateTo}
                     onLogInvitation={(company, role, dateText) => {
-                      const entry: DashboardApplication = {
-                        id: `app-inv-${Date.now()}`,
-                        jobId: "custom-invite",
-                        title: role,
-                        company,
-                        stage: "Interview",
-                        submissionState: "user-reported-submitted",
-                        evidenceText:
-                          "User-recorded invitation — source noted explicitly",
-                        quietDays: 0,
-                        priority: "High",
-                        interviewDate: dateText,
-                        interviewFormat: "Recorded by candidate",
-                        cvVariant: "Tailored interview pack",
-                        coverLetterApproved: true,
-                        checklist: {
-                          cvReviewed: true,
-                          letterApproved: true,
-                          questionsAnswered: true,
-                          fieldsChecked: true,
-                        },
-                        notes: "Review role gaps & complete 1 mock drill before call.",
-                        followUpDate: "2026-11-22",
-                        history: [
-                          {
-                            at: "Just now",
-                            actor: "User",
-                            event: `Logged interview invitation for ${dateText}`,
-                          },
-                        ],
-                        extensionFields: [],
-                      };
-                      setApplications((prev) => [entry, ...prev]);
+                      logInvitation(company, role, dateText);
                     }}
                   />
                 )}
@@ -625,109 +504,59 @@ export default function DashboardShell() {
                   <ApplicationsTrackerView
                     applications={applications}
                     onAddApplication={(company, title, deadline, priority, url) => {
-                      const entry: DashboardApplication = {
-                        id: `app-manual-${Date.now()}`,
-                        jobId: `manual-${Date.now()}`,
-                        title,
-                        company,
-                        stage: "Planned",
-                        submissionState: "prepared",
-                        evidenceText: url
-                          ? `Added manually · Target link: ${url}`
-                          : "Added manually to tracker",
-                        quietDays: 0,
-                        deadline,
-                        priority,
-                        cvVariant: "Untouched Base CV",
-                        coverLetterApproved: false,
-                        checklist: {
-                          cvReviewed: false,
-                          letterApproved: false,
-                          questionsAnswered: false,
-                          fieldsChecked: false,
-                        },
-                        notes: "",
-                        followUpDate: "2026-11-24",
+                      logInvitation(company, title, deadline || "Planned");
+                      void priority;
+                      void url;
+                    }}
+                    onUpdateStage={(appId, stage) =>
+                      updateApplication(appId, (a) => ({
+                        ...a,
+                        stage,
                         history: [
                           {
                             at: "Just now",
                             actor: "User",
-                            event: `Added manual application for ${title} at ${company}`,
+                            event: `Moved stage to ${stage}`,
                           },
+                          ...a.history,
                         ],
-                        extensionFields: [],
-                      };
-                      setApplications((prev) => [entry, ...prev]);
-                    }}
-                    onUpdateStage={(appId, stage) =>
-                      setApplications((prev) =>
-                        prev.map((a) =>
-                          a.id === appId
-                            ? {
-                                ...a,
-                                stage,
-                                history: [
-                                  {
-                                    at: "Just now",
-                                    actor: "User",
-                                    event: `Moved stage to ${stage}`,
-                                  },
-                                  ...a.history,
-                                ],
-                              }
-                            : a
-                        )
-                      )
+                      }))
                     }
                     onUpdateSubmission={(appId, state, evidence) =>
-                      setApplications((prev) =>
-                        prev.map((a) =>
-                          a.id === appId
-                            ? {
-                                ...a,
-                                submissionState: state,
-                                evidenceText: evidence,
-                                history: [
-                                  {
-                                    at: "Just now",
-                                    actor: "User",
-                                    event: evidence,
-                                  },
-                                  ...a.history,
-                                ],
-                              }
-                            : a
-                        )
-                      )
+                      updateApplication(appId, (a) => ({
+                        ...a,
+                        submissionState: state,
+                        evidenceText: evidence,
+                        history: [
+                          {
+                            at: "Just now",
+                            actor: "User",
+                            event: evidence,
+                          },
+                          ...a.history,
+                        ],
+                      }))
                     }
                     onUpdateNotes={(appId, notes, followUpDate) =>
-                      setApplications((prev) =>
-                        prev.map((a) =>
-                          a.id === appId ? { ...a, notes, followUpDate } : a
-                        )
-                      )
+                      updateApplication(appId, (a) => ({
+                        ...a,
+                        notes,
+                        followUpDate,
+                      }))
                     }
                     onFillExtensionField={(appId, fieldId, value) =>
-                      setApplications((prev) =>
-                        prev.map((a) =>
-                          a.id === appId
+                      updateApplication(appId, (a) => ({
+                        ...a,
+                        extensionFields: a.extensionFields.map((f) =>
+                          f.id === fieldId
                             ? {
-                                ...a,
-                                extensionFields: a.extensionFields.map((f) =>
-                                  f.id === fieldId
-                                    ? {
-                                        ...f,
-                                        value,
-                                        status: value.trim()
-                                          ? "Filled"
-                                          : "Needs input",
-                                      }
-                                    : f
-                                ),
+                                ...f,
+                                value,
+                                status: value.trim() ? "Filled" : "Needs input",
                               }
-                            : a
-                        )
-                      )
+                            : f
+                        ),
+                      }))
                     }
                     onNavigate={navigateTo}
                   />
@@ -738,27 +567,10 @@ export default function DashboardShell() {
                     profile={profile}
                     diffs={diffs}
                     flags={flags}
-                    onDecideDiff={(diffId, decision) => {
-                      setDiffs((prev) =>
-                        prev.map((d) =>
-                          d.id === diffId ? { ...d, status: decision } : d
-                        )
-                      );
-                      if (diffId === "diff-2" && decision === "rejected") {
-                        setFlags((prev) =>
-                          prev.map((f) =>
-                            f.id === "qf-1" ? { ...f, resolved: true } : f
-                          )
-                        );
-                      }
-                    }}
-                    onResolveFlag={(flagId) =>
-                      setFlags((prev) =>
-                        prev.map((f) =>
-                          f.id === flagId ? { ...f, resolved: true } : f
-                        )
-                      )
+                    onDecideDiff={(diffId, decision) =>
+                      decideDiff(diffId, decision)
                     }
+                    onResolveFlag={(flagId) => resolveFlag(flagId)}
                   />
                 )}
 
@@ -767,7 +579,30 @@ export default function DashboardShell() {
                     applications={applications}
                     mockSessionsCount={mockSessionsCount}
                     onCompleteSession={() =>
-                      setMockSessionsCount((c) => c + 1)
+                      addInterviewSession({
+                        id: `sess-${Date.now()}`,
+                        applicationId: applications[0]?.id || "app-1",
+                        company: applications[0]?.company || "Target Role",
+                        roleTitle: applications[0]?.title || "Interview Drill",
+                        philosopher: "Socrates",
+                        mode: "Behavioral",
+                        difficulty: "Mid",
+                        createdAt: "Just now",
+                        overallScore: 86,
+                        voiceUsed: false,
+                        turns: [
+                          {
+                            question: "Interactive Socratic Drill completed inside Interview Studio.",
+                            answer: "Recorded response evaluated against structured STAR framing.",
+                            mode: "Behavioral",
+                            structureScore: 88,
+                            clarityScore: 85,
+                            relevanceScore: 85,
+                            wordCount: 92,
+                            feedbackNote: "Strong ownership lead; pair closing sentence with quantitative result.",
+                          },
+                        ],
+                      })
                     }
                   />
                 )}
@@ -777,42 +612,11 @@ export default function DashboardShell() {
                     skills={skills}
                     courses={courses}
                     onChallengeSkill={(skillId, note) =>
-                      setSkills((prev) =>
-                        prev.map((s) =>
-                          s.id === skillId
-                            ? {
-                                ...s,
-                                challengeHistory: [
-                                  ...s.challengeHistory,
-                                  `User challenged: "${note}"`,
-                                ],
-                              }
-                            : s
-                        )
-                      )
+                      challengeSkill(skillId, note)
                     }
-                    onUpgradeSkillDemonstrated={(skillId, courseId) => {
-                      setSkills((prev) =>
-                        prev.map((s) =>
-                          s.id === skillId
-                            ? {
-                                ...s,
-                                evidenceTier: "Demonstrated in Vex",
-                                proficiency: "Intermediate",
-                                confidence: "High",
-                                confidenceReason:
-                                  "Passed API retry & error-handling check inside Vex",
-                                sourceLabel: "Completed Vex Practical Check",
-                              }
-                            : s
-                        )
-                      );
-                      setCourses((prev) =>
-                        prev.map((c) =>
-                          c.id === courseId ? { ...c, status: "Completed" } : c
-                        )
-                      );
-                    }}
+                    onUpgradeSkillDemonstrated={(skillId, courseId) =>
+                      upgradeSkillDemonstrated(skillId, courseId)
+                    }
                   />
                 )}
 
@@ -822,48 +626,11 @@ export default function DashboardShell() {
                     connections={connections}
                     externalApps={externalApps}
                     activityLog={activityLog}
-                    onToggleConnection={(id) =>
-                      setConnections((prev) =>
-                        prev.map((c) =>
-                          c.id === id
-                            ? {
-                                ...c,
-                                status:
-                                  c.status === "Connected"
-                                    ? "Disconnected"
-                                    : "Connected",
-                                statusNote:
-                                  c.status === "Connected"
-                                    ? "Disconnected by user — zero external calls"
-                                    : "Reconnected & tested healthy just now",
-                                lastUsed: "Just now",
-                              }
-                            : c
-                        )
-                      )
-                    }
-                    onToggleExternalApp={(id) =>
-                      setExternalApps((prev) =>
-                        prev.map((a) =>
-                          a.id === id ? { ...a, enabled: !a.enabled } : a
-                        )
-                      )
-                    }
-                    onClearActivity={() => setActivityLog([])}
+                    onToggleConnection={(id) => toggleConnection(id)}
+                    onToggleExternalApp={(id) => toggleExternalApp(id)}
+                    onClearActivity={() => clearActivity()}
                     onRecordAssistantPlanRun={(prompt) =>
-                      setActivityLog((prev) => [
-                        {
-                          id: `act-${Date.now()}`,
-                          time: "Just now",
-                          actor: "You",
-                          tool: "Coordinator Plan",
-                          action: `Ran supervised plan: "${prompt.slice(0, 52)}..."`,
-                          dataShared: "Target role, read-only jobs, CV draft",
-                          approval: "Approved",
-                          result: "Succeeded",
-                        },
-                        ...prev,
-                      ])
+                      recordAssistantRun(prompt)
                     }
                   />
                 )}
@@ -878,22 +645,14 @@ export default function DashboardShell() {
                 {section === "network" && (
                   <NetworkView
                     contacts={contacts}
-                    onAddContact={(contact) =>
-                      setContacts((prev) => [contact, ...prev])
-                    }
+                    onAddContact={(contact) => addContact(contact)}
                   />
                 )}
 
                 {section === "alerts" && (
                   <AlertsView
                     alerts={alerts}
-                    onDismissAlert={(id) =>
-                      setAlerts((prev) =>
-                        prev.map((a) =>
-                          a.id === id ? { ...a, dismissed: true } : a
-                        )
-                      )
-                    }
+                    onDismissAlert={(id) => dismissAlert(id)}
                     onNavigate={navigateTo}
                   />
                 )}
@@ -902,17 +661,7 @@ export default function DashboardShell() {
                   <SettingsPrivacyView
                     profile={profile}
                     plan={plan}
-                    onChangePlan={(nextPlan) => {
-                      setPlan(nextPlan);
-                      try {
-                        window.localStorage.setItem(
-                          "vex_subscription_plan",
-                          nextPlan
-                        );
-                      } catch {
-                        // Ignore
-                      }
-                    }}
+                    onChangePlan={(nextPlan) => changePlan(nextPlan)}
                     onResetWorkspaceData={resetWorkspaceData}
                   />
                 )}
@@ -921,60 +670,13 @@ export default function DashboardShell() {
           </main>
       </div>
 
-      {/* MOBILE BOTTOM BAR (Template 21: Home, Jobs, Track, More) */}
-      <nav
-        aria-label="Mobile dashboard navigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dad6ca] bg-[#18222e] px-2 py-2 text-[#faf6ed] lg:hidden"
-      >
-        <div className="grid grid-cols-4 gap-1">
-          {[
-            { id: "overview" as const, label: "Home" },
-            { id: "jobs" as const, label: "Jobs" },
-            { id: "applications" as const, label: "Track" },
-          ].map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => navigateTo(m.id)}
-              className={`min-h-[44px] cursor-pointer rounded-[12px] text-[12px] font-medium ${
-                section === m.id
-                  ? "bg-[#faf6ed] text-[#212d3d]"
-                  : "text-[#faf6ed]/80"
-              }`}
-            >
-              {m.label}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setMoreDrawerOpen((v) => !v)}
-            className={`min-h-[44px] cursor-pointer rounded-[12px] text-[12px] font-medium ${
-              moreDrawerOpen
-                ? "bg-[#33445c] text-[#faf6ed]"
-                : "text-[#faf6ed]/80"
-            }`}
-          >
-            More ({moreDrawerOpen ? "−" : "+"})
-          </button>
-        </div>
-
-        {moreDrawerOpen && (
-          <div className="mt-2 grid grid-cols-2 gap-1.5 border-t border-white/10 pt-2">
-            {NAV_ITEMS.filter(
-              (n) => !["overview", "jobs", "applications"].includes(n.id)
-            ).map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => navigateTo(n.id)}
-                className="min-h-[44px] cursor-pointer rounded-[10px] bg-white/[0.08] px-3 text-left text-[12px] font-medium text-[#faf6ed]"
-              >
-                {n.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </nav>
+      {/* APPLE HIG 5-TAB BOTTOM NAVIGATION (Mobile Companion Only) */}
+      <MobileTabBar
+        activeTab={primaryTab}
+        onSelectSection={navigateTo}
+        jobsCount={jobs.filter((j) => !hiddenJobIds.includes(j.id)).length}
+        appsCount={applications.length}
+      />
 
       {/* GLOBAL FIFA-MOBILE INTERACTIVE PHILOSOPHER GUIDE ACROSS EVERY PAGE */}
       <PhilosopherCoachGuide

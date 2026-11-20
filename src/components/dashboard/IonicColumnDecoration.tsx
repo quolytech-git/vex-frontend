@@ -1472,13 +1472,10 @@ export function GreekTempleWordFrame({
 
   return (
     <div
-      className="relative w-full select-none"
-      style={{
-        filter: "drop-shadow(0 24px 44px rgba(33, 45, 61, 0.22))",
-      }}
+      className="relative w-full select-none lg:[filter:drop-shadow(0_24px_44px_rgba(33,45,61,0.22))]"
     >
-      {/* 1. SCULPTURAL CLASSICAL TRIANGULAR PEDIMENT & ENTABLATURE ROOF */}
-      <svg aria-hidden="true" viewBox="0 -14 1120 162" className="relative z-30 block h-auto w-full overflow-visible">
+      {/* 1. SCULPTURAL CLASSICAL TRIANGULAR PEDIMENT & ENTABLATURE ROOF (Desktop Only) */}
+      <svg aria-hidden="true" viewBox="0 -14 1120 162" className="relative z-30 hidden h-auto w-full overflow-visible lg:block">
         <defs>
           <linearGradient id={`${uid}-w-stone`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#e5d9bf" />
@@ -1570,20 +1567,24 @@ export function GreekTempleWordFrame({
         <rect x="15" y="143.9" width="1090" height="4.1" fill={`url(#${uid}-w-shadow)`} stroke={ink} strokeWidth="0.95" />
       </svg>
 
-      {/* 2. SANCTUARY CHAMBER — TRANSPARENT OUTSIDE COLUMNS, WARM LIMESTONE INSIDE */}
-      <div className="relative flex w-full items-stretch bg-transparent px-0 sm:px-[1.1%]">
-        <IonicSidePillar side="left" />
+      {/* 2. SANCTUARY CHAMBER — DESKTOP TEMPLE CELL vs CLEAN MOBILE APPLE SURFACE */}
+      <div className="relative flex w-full items-stretch bg-transparent px-0 lg:px-[1.1%]">
+        <div className="hidden lg:block">
+          <IonicSidePillar side="left" />
+        </div>
 
-        {/* Recessed Sanctuary Cella Interior with Architectural Column Cast Shadow */}
-        <div className="relative z-10 min-w-0 flex-1 select-text border-x border-[#3a2d1d]/30 bg-[#f5efe0] text-[#2c2821] shadow-[inset_14px_0_22px_-12px_rgba(45,35,20,0.28),inset_-14px_0_22px_-12px_rgba(45,35,20,0.28),inset_0_14px_20px_-14px_rgba(45,35,20,0.34)]">
+        {/* Recessed Sanctuary Cella Interior on Desktop / Clean Surface on Mobile */}
+        <div className="vex-m-flat relative z-10 min-w-0 flex-1 select-text rounded-[22px] border border-[#dad6ca] bg-[#fffef9] text-[#2c2821] lg:rounded-none lg:border-y-0 lg:border-x lg:border-[#3a2d1d]/30 lg:bg-[#f5efe0] lg:shadow-[inset_14px_0_22px_-12px_rgba(45,35,20,0.28),inset_-14px_0_22px_-12px_rgba(45,35,20,0.28),inset_0_14px_20px_-14px_rgba(45,35,20,0.34)]">
           {children}
         </div>
 
-        <IonicSidePillar side="right" />
+        <div className="hidden lg:block">
+          <IonicSidePillar side="right" />
+        </div>
       </div>
 
-      {/* 3. MULTI-STEP TRAVERTINE CREPIDOMA / STYLOBATE FOUNDATION */}
-      <div className="relative z-30 w-full">
+      {/* 3. MULTI-STEP TRAVERTINE CREPIDOMA / STYLOBATE FOUNDATION (Desktop Only) */}
+      <div className="relative z-30 hidden w-full lg:block">
         <div className="mx-auto h-3.5 w-[98.6%] border border-[#3a2d1d] bg-gradient-to-r from-[#cbb892] via-[#fffdf6] via-35% to-[#baa57e] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]" />
         <div className="mx-auto grid h-5 w-[99.4%] grid-cols-4 border border-[#3a2d1d] bg-gradient-to-b from-[#cbb892] to-[#e8dec5] shadow-inner">
           <div className="border-r border-[#3a2d1d]/35" />

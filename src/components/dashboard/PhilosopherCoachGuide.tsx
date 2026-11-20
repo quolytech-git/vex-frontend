@@ -70,6 +70,16 @@ const TOUR: TourPage[] = [
         ],
         tip: "Aim for all seven before applying to your dream roles.",
       },
+      {
+        title: "Horizons, Fit Math & Offer Benchmark",
+        matchText: "Compare Offers",
+        say: "Switch between 7 Days, 30 Days and All Time horizons, inspect how Vex calculates your Fit & Momentum score, or compare offers side by side.",
+        how: [
+          "Use the time horizon toggle in the top right.",
+          "Tap How Fit Math Works for transparent scoring proof.",
+          "Tap Compare Offers to weigh compensation and commute.",
+        ],
+      },
     ],
   },
   {
@@ -120,6 +130,16 @@ const TOUR: TourPage[] = [
         ],
         tip: "Saved filters can become recurring alerts, delivered by Hermes on the Alerts page.",
       },
+      {
+        title: "Athena Strategic Job Dossier",
+        matchText: "Athena Full Job Page",
+        say: "Need Athena's full fit analysis? Open the dedicated job page for skills breakdown, salary verdict, and apply prep.",
+        how: [
+          "Tap Athena Full Job Page on any role.",
+          "Inspect matched skills, missing gaps, and competition cues.",
+          "Jump straight to Vex Apply pre-submit review or Save Search.",
+        ],
+      },
     ],
   },
   {
@@ -136,6 +156,16 @@ const TOUR: TourPage[] = [
           "Switch between board and list view at the top.",
           "Tap any application to open its details drawer.",
           "Use the calendar to see interviews and deadlines.",
+        ],
+      },
+      {
+        title: "Full application & Vex Apply review",
+        matchText: "Open Full Dossier",
+        say: "Open Themis's full application dossier or Hermes's Vex Apply pre-submit queue to inspect every proof field.",
+        how: [
+          "Select an application to inspect its drawer.",
+          "Tap Open Full Dossier for timeline, attached CV, and emails.",
+          "Tap Vex Apply Review before confirming automated field fills.",
         ],
       },
       {
@@ -222,6 +252,16 @@ const TOUR: TourPage[] = [
           "Tap Export DOCX to download your file.",
         ],
         tip: "Name the file with your name and the company — recruiters notice.",
+      },
+      {
+        title: "Full CV Editor & Cicero Letters",
+        matchText: "Full CV Editor",
+        say: "Need structured editing, resume upload parsing, print PDF export, or Cicero's persuasive cover letter workshop? Open the dedicated studios here.",
+        how: [
+          "Tap Full CV Editor to edit experience, skills, and ATS score.",
+          "Tap Print Preview for clean print-to-PDF layout.",
+          "Tap Cicero Cover Letters to draft and score tailored letters.",
+        ],
       },
     ],
   },
@@ -351,6 +391,15 @@ const TOUR: TourPage[] = [
         say: "When you're ready, get structured feedback — your strengths, missing metrics and what to tighten.",
         how: ["Tap Evaluate Answer.", "Read the feedback, edit, and evaluate again."],
       },
+      {
+        title: "Live Session & Aristotle Report",
+        matchText: "Live Voice/Text Session",
+        say: "Switch into Socrates's full-screen timed session with optional voice dictation, then review Aristotle's analytics breakdown.",
+        how: [
+          "Tap Live Voice/Text Session for focused Q&A rounds.",
+          "Tap Analytics Report for topic accuracy and filler trends.",
+        ],
+      },
     ],
   },
   {
@@ -393,6 +442,15 @@ const TOUR: TourPage[] = [
         say: "Stuck? Ask the tutor anything — SQL, APIs, or questions about your PDF.",
         how: ["Tap Ask Tutor.", "Type your question and follow along step by step."],
       },
+      {
+        title: "Catalog & Skill Assessments",
+        matchText: "Full Course Catalog",
+        say: "Explore the full Lyceum catalog to enrol in new tracks or challenge Athena's timed mastery quizzes.",
+        how: [
+          "Tap Full Course Catalog to filter and enrol in modules.",
+          "Tap Athena Skill Assessments to earn verified level badges.",
+        ],
+      },
     ],
   },
   {
@@ -433,6 +491,12 @@ const TOUR: TourPage[] = [
         matchText: "Manage Tools",
         say: "Connect or disconnect tools like Gmail, Greenhouse and other AI apps. You can revoke access anytime.",
         how: ["Tap Manage Tools.", "Use Connect or Disconnect next to each tool."],
+      },
+      {
+        title: "Hephaestus Integrations & Inbox",
+        matchText: "Hephaestus Integrations",
+        say: "Need deep scope controls, webhook logs, or Hermes's Gmail/Outlook recruiter classifier? Step into Hephaestus's forge.",
+        how: ["Tap Hephaestus Integrations & Inbox to inspect endpoints and recruiter sync."],
       },
     ],
   },
@@ -492,6 +556,12 @@ const TOUR: TourPage[] = [
         matchText: "Verify email",
         say: "Verify your email to secure your account and receive important alerts.",
         how: ["Tap Verify email and follow the link sent to your inbox."],
+      },
+      {
+        title: "Plutus Billing & Usage Quotas",
+        matchText: "Plutus Billing",
+        say: "Inspect AI usage meters, payment preview controls, and invoice history with Plutus.",
+        how: ["Tap Plutus Billing & Invoices to review quotas and past invoices."],
       },
       {
         title: "Reset your workspace",
@@ -686,6 +756,8 @@ function PhilosopherCharacter({
         cx="100"
         cy="128"
         rx="6"
+        ry={1.2}
+        initial={{ ry: 1.2 }}
         fill="#6b4b3a"
         animate={talking ? { ry: [1.2, 4.2, 1.6, 3.4, 1.2] } : { ry: 1.2 }}
         transition={{ duration: 0.55, repeat: talking ? Infinity : 0 }}

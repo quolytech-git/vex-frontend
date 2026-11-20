@@ -231,3 +231,166 @@ body {
   width: 0;
   height: 0;
 }
+
+/* Mobile Apple-HIG Editorial Companion Utilities */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.ios-tabbar-glass {
+  background-color: rgba(250, 246, 237, 0.88);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.ios-card {
+  border-radius: 20px;
+  border: 1px solid rgba(33, 45, 61, 0.08);
+  background-color: rgba(255, 254, 249, 0.94);
+  box-shadow: 0 2px 12px rgba(33, 45, 61, 0.04);
+}
+
+/* ------------------------------------------------------------------ */
+/*  iPhone app layer for the dashboard — phones & tablets only (< lg). */
+/*  Desktop (>= 1024px) is untouched: every rule lives in this query.  */
+/* ------------------------------------------------------------------ */
+@media (max-width: 1023.98px) {
+  .vex-app {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* The nav bar already names the page: drop the desktop eyebrow + intro copy. */
+  .vex-app main .vex-eyebrow {
+    display: none;
+  }
+  .vex-app main h1 + p {
+    display: none;
+  }
+
+  /* iOS "large title" scale for page heroes. */
+  .vex-app main h1 {
+    font-size: 27px !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  /* Flatten the outer desktop frame so cards sit directly on the app background
+     instead of a card nested inside a card. */
+  .vex-app main > div > div > section:first-of-type,
+  .vex-app main .vex-m-flat {
+    border-width: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  .vex-app main > div > div > section:first-of-type > .grid:first-child,
+  .vex-app main > div > div > section:first-of-type > div:first-child[class*="p-"] {
+    padding: 0 !important;
+  }
+
+  /* Wrapping rows of 3+ buttons become one swipeable row of pills (App Store style). */
+  .vex-app main .flex-wrap:has(> :is(button, a) ~ :is(button, a) ~ :is(button, a)) {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* Fade the trailing edge so it's obvious the row swipes. */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    padding-right: 24px;
+  }
+  .vex-app main .flex-wrap:has(> :is(button, a) ~ :is(button, a) ~ :is(button, a))::-webkit-scrollbar {
+    display: none;
+  }
+  .vex-app main .flex-wrap:has(> :is(button, a) ~ :is(button, a) ~ :is(button, a)) > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  /* Comfortable 44pt touch targets for pill buttons. */
+  .vex-app main button.rounded-full,
+  .vex-app main a.rounded-full {
+    min-height: 36px;
+  }
+  /* Grid cells and form fields may shrink to the screen; long values truncate
+     inside the field instead of pushing the page sideways. */
+  .vex-app main .grid > *,
+  .vex-app main .flex > * {
+    min-width: 0;
+  }
+  .vex-app main select,
+  .vex-app main input,
+  .vex-app main textarea {
+    max-width: 100%;
+  }
+  .vex-app main select {
+    text-overflow: ellipsis;
+  }
+
+  /* Pill buttons keep their label on one line (no squashed round blobs). */
+  .vex-app main button.rounded-full,
+  .vex-app main a.rounded-full {
+    white-space: nowrap;
+  }
+  .vex-app main .flex > button.rounded-full,
+  .vex-app main .flex > a.rounded-full {
+    flex-shrink: 0;
+  }
+
+  .vex-app main .vex-compact button.rounded-full {
+    min-height: 0;
+  }
+
+  /* Press feedback like native buttons. */
+  .vex-app main button:active,
+  .vex-app main a:active {
+    transform: scale(0.97);
+    transition: transform 0.08s ease;
+  }
+}
+
+/* iOS-style frosted glass surfaces (used by the mobile tab bar, nav bar, sheets). */
+.vex-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 246, 237, 0.74) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+  backdrop-filter: blur(22px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 12px 32px rgba(33, 45, 61, 0.16),
+    0 2px 6px rgba(33, 45, 61, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(33, 45, 61, 0.04);
+}
+
+.vex-glass-bar {
+  background: rgba(246, 241, 230, 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.vex-glass-bar[data-scrolled="true"] {
+  background: rgba(246, 241, 230, 0.6);
+  border-bottom-color: rgba(33, 45, 61, 0.12);
+}
+
+.vex-glass-btn {
+  background: rgba(255, 255, 255, 0.66);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 2px 10px rgba(33, 45, 61, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.12s ease;
+}
+.vex-glass-btn:active {
+  transform: scale(0.92);
+}

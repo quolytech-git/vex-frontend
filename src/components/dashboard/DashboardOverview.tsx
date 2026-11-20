@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   type DailyPlanTask,
@@ -22,6 +23,7 @@ import {
   OverviewVelocityCanvas,
 } from "./OverviewCanvasCharts";
 import { StatusPill, SubmissionStateBadge } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
 
 interface DashboardOverviewProps {
   profile: OnboardingProfileState;
@@ -57,6 +59,8 @@ export default function DashboardOverview({
   const [inviteDate, setInviteDate] = useState("Thu 19 Nov · 14:00 GMT");
   const [inviteLogged, setInviteLogged] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
+  const [showMathExplain, setShowMathExplain] = useState(false);
+  const [horizon, setHorizon] = useState<"7d" | "30d" | "all">("7d");
   const [activeSageIndex, setActiveSageIndex] = useState(0);
   const [lowerTab, setLowerTab] = useState<"execution" | "audit" | "academy">(
     "execution"
@@ -96,7 +100,10 @@ export default function DashboardOverview({
         )
       : 87;
 
-  const weeklyFocusMinutes = 160 + mockSessionsCount * 26;
+  const horizonMultiplier = horizon === "all" ? 4.2 : horizon === "30d" ? 2.4 : 1;
+  const weeklyFocusMinutes = Math.round(
+    (160 + mockSessionsCount * 26) * horizonMultiplier
+  );
   const shortlistRatio = Math.min(
     100,
     Math.round((savedJobIds.length / Math.max(1, visibleJobs.length)) * 100)
@@ -104,13 +111,13 @@ export default function DashboardOverview({
   const cvProofRatio = unresolvedFlagsCount === 0 ? 94 : 78;
 
   const prepDays = [
-    { day: "Mon", mins: 25 },
-    { day: "Tue", mins: 32 },
-    { day: "Wed", mins: 38 },
-    { day: "Thu", mins: 42 },
-    { day: "Fri", mins: 45 + mockSessionsCount * 8, active: true },
-    { day: "Sat", mins: 36 },
-    { day: "Sun", mins: 28 },
+    { day: "Mon", mins: Math.round(25 * (horizon === "7d" ? 1 : 1.3)) },
+    { day: "Tue", mins: Math.round(32 * (horizon === "7d" ? 1 : 1.25)) },
+    { day: "Wed", mins: Math.round(38 * (horizon === "all" ? 1.4 : 1)) },
+    { day: "Thu", mins: Math.round(42 * (horizon === "7d" ? 1 : 1.2)) },
+    { day: "Fri", mins: Math.round((45 + mockSessionsCount * 8) * (horizon === "7d" ? 1 : 1.15)), active: true },
+    { day: "Sat", mins: Math.round(36 * (horizon === "all" ? 1.3 : 1)) },
+    { day: "Sun", mins: Math.round(28 * (horizon === "7d" ? 1 : 1.2)) },
   ];
 
   const readinessRows = [
@@ -179,7 +186,331 @@ export default function DashboardOverview({
   }
 
   return (
-    <div className="space-y-6">
+    <div>
+      {/* MOBILE APPLE-HIG COMPANION HOME (< lg) Matching Uploaded Mobile System */}
+      <div className="space-y-5 overflow-x-hidden lg:hidden">
+        {/* 1. Primary Dark Charcoal Bento Readiness Card + Right Gold Action Notch */}
+        <section className="relative overflow-hidden rounded-[28px] bg-[#1a2430] p-5 text-[#faf6ed] shadow-[0_14px_34px_rgba(18,34,46,0.22)]">
+          <div className="flex items-stretch justify-between gap-3">
+            <div className="flex flex-1 flex-col justify-between space-y-5 pr-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#e3cea0]">
+                  VEX · {plan.toUpperCase()}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate("jobs")}
+                  className="cursor-pointer rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-[#faf6ed]"
+                >
+                  + Target Role
+                </button>
+              </div>
+
+              <div>
+                <p className="text-[11.5px] text-[#faf6ed]/70">Readiness Score</p>
+                <p className="mt-0.5 font-serif-display text-[44px] leading-none tracking-[-0.02em] text-white">
+                  {careerMomentumScore}%
+                </p>
+                <p className="mt-1.5 text-[11.5px] text-[#faf6ed]/75">
+                  {submittedApps.length} sent · {upcomingInterviews.length}{" "}
+                  {upcomingInterviews.length === 1 ? "interview" : "interviews"}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-[#faf6ed]/70">
+                <span className="truncate font-medium text-[#faf6ed]">
+                  {profile.name || "Explorer"}
+                </span>
+                <span>{completedTasksCount}/{dailyTasks.length} today</span>
+              </div>
+            </div>
+
+            {/* Signature Vertical Rounded Action Pill (Notched Accent Strip) */}
+            <button
+              type="button"
+              onClick={() => onNavigate("applications")}
+              aria-label="Open Applications Pipeline"
+              className="flex w-[56px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-[22px] bg-[#e3cea0] text-[#1a2430] shadow-xs transition-transform active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.1" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.06em]">
+                Track
+              </span>
+            </button>
+          </div>
+        </section>
+
+        {/* 2. 4 Circular White Quick Actions Row (Jobs, Letters, Apply, Coach) */}
+        <div className="grid grid-cols-4 gap-3 text-center">
+          <button
+            type="button"
+            onClick={() => onNavigate("jobs")}
+            className="flex cursor-pointer flex-col items-center gap-1.5"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#212d3d] shadow-[0_2px_10px_rgba(33,45,61,0.06)]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="text-[11.5px] font-medium text-[#212d3d]">Jobs</span>
+          </button>
+
+          <Link
+            href="/dashboard/documents/cover-letters"
+            className="flex flex-col items-center gap-1.5"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#212d3d] shadow-[0_2px_10px_rgba(33,45,61,0.06)]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6M8 13h8M8 17h5" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className="text-[11.5px] font-medium text-[#212d3d]">Letters</span>
+          </Link>
+
+          <Link
+            href="/dashboard/apply"
+            className="flex flex-col items-center gap-1.5"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#212d3d] shadow-[0_2px_10px_rgba(33,45,61,0.06)]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="4" />
+                <path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="text-[11.5px] font-medium text-[#212d3d]">Apply</span>
+          </Link>
+
+          <Link
+            href="/dashboard/integrations/mcp"
+            className="flex flex-col items-center gap-1.5"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e3cea0] text-[#1a2430] shadow-[0_2px_10px_rgba(33,45,61,0.08)]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+                <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+                <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+                <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+                <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+              </svg>
+            </span>
+            <span className="text-[11.5px] font-medium text-[#212d3d]">MCP</span>
+          </Link>
+        </div>
+
+        {/* 3. Philosopher Council Circular Avatar Row ("Quick Counsel") */}
+        <section className="space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif-display text-[20px] text-[#212d3d]">
+              Philosopher Council
+            </h2>
+            <button
+              type="button"
+              onClick={() =>
+                setActiveSageIndex((i) => (i + 1) % PHILOSOPHER_COUNCIL.length)
+              }
+              className="cursor-pointer text-[12px] font-medium text-[#5a6675]"
+            >
+              Cycle &gt;
+            </button>
+          </div>
+          <div className="no-scrollbar flex items-start gap-3.5 overflow-x-auto pb-1">
+            {[
+              { name: "Marcus", img: "/images/interview-marcus-stoic.jpg", idx: 0 },
+              { name: "Athena", img: "/images/athena-strategy-owl.jpg", idx: 1 },
+              { name: "Cicero", img: "/images/cicero-rhetoric-scroll.jpg", idx: 2 },
+              { name: "Hermes", img: "/images/hermes-messenger-alerts.jpg", idx: 3 },
+              { name: "Socrates", img: "/images/interview-socrates-dialectic.jpg", idx: 0 },
+            ].map((sage) => (
+              <button
+                key={sage.name}
+                type="button"
+                onClick={() => setActiveSageIndex(sage.idx % PHILOSOPHER_COUNCIL.length)}
+                className="flex shrink-0 cursor-pointer flex-col items-center gap-1"
+              >
+                <img
+                  src={sage.img}
+                  alt={sage.name}
+                  className="h-13 w-13 rounded-full border-2 border-white object-cover object-top shadow-xs"
+                />
+                <span className="text-[11px] font-medium text-[#212d3d]">
+                  {sage.name}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <MobilePhilosopherPill
+            name={activeSage.name}
+            role={activeSage.school}
+            image="/images/vex-philosopher.jpg"
+            quote={activeSage.quote}
+            guidance={activeSage.focusHint}
+            actionLabel="Open Jobs Deck"
+            onAction={() => onNavigate("jobs")}
+          />
+        </section>
+
+        {/* 4. Segmented Horizon Pills + 2-Card Split Bento Metric Pair */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-1.5">
+            {(
+              [
+                { id: "7d", label: "7 Days" },
+                { id: "30d", label: "30 Days" },
+                { id: "all", label: "All Time" },
+              ] as const
+            ).map((h) => (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => setHorizon(h.id)}
+                className={`min-h-[36px] flex-1 cursor-pointer rounded-full text-[12px] font-medium transition-colors ${
+                  horizon === h.id
+                    ? "bg-[#e3cea0] text-[#1a2430]"
+                    : "bg-white text-[#5a6675]"
+                }`}
+              >
+                {h.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Left Warm Gold Bento Card: Fit & Shortlist */}
+            <button
+              type="button"
+              onClick={() => onNavigate("jobs")}
+              className="flex cursor-pointer flex-col justify-between rounded-[24px] bg-[#e3cea0] p-4 text-left text-[#1a2430]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11.5px] font-medium">Match Lift</span>
+                <span className="font-mono text-[10px]">•••</span>
+              </div>
+              <p className="mt-2 font-serif-display text-[32px] leading-none">
+                {avgCompatibility}%
+              </p>
+              <p className="mt-1.5 text-[11px] text-[#1a2430]/75">
+                {savedJobIds.length} shortlisted across verified boards
+              </p>
+              <div className="mt-3 flex gap-1">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-2 w-2 rounded-full ${
+                      i < 6 ? "bg-[#1a2430]" : "bg-[#1a2430]/25"
+                    }`}
+                  />
+                ))}
+              </div>
+            </button>
+
+            {/* Right Dark Charcoal Bento Card: CV & Pipeline Mini Spec */}
+            <button
+              type="button"
+              onClick={() => onNavigate("documents")}
+              className="flex cursor-pointer flex-col justify-between rounded-[24px] bg-[#1a2430] p-4 text-left text-[#faf6ed]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11.5px] font-medium text-[#faf6ed]/85">
+                  CV Quality
+                </span>
+                <span className="font-mono text-[10px] text-[#e3cea0]">•••</span>
+              </div>
+              <p className="mt-2 font-serif-display text-[32px] leading-none">
+                {applicationQualityScore}
+                <span className="ml-0.5 text-[15px] text-[#e3cea0]">/100</span>
+              </p>
+              {/* Compact Classical Vector Web Graphic */}
+              <svg viewBox="0 0 120 68" className="mt-2 h-14 w-full" aria-hidden="true">
+                <polygon
+                  points="60,6 104,24 92,58 28,58 16,24"
+                  fill="none"
+                  stroke="rgba(227,206,160,0.28)"
+                  strokeWidth="1"
+                />
+                <polygon
+                  points="60,14 92,28 82,52 38,52 28,28"
+                  fill="rgba(227,206,160,0.18)"
+                  stroke="#e3cea0"
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        {/* 5. Today's Priorities & Recent Pipeline Feed */}
+        <section className="rounded-[24px] bg-white p-4 shadow-[0_2px_12px_rgba(33,45,61,0.04)] space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif-display text-[20px] text-[#212d3d]">
+              Today&apos;s Activity
+            </h3>
+            <button
+              type="button"
+              onClick={() => onNavigate("applications")}
+              className="cursor-pointer text-[12px] font-medium text-[#5a6675]"
+            >
+              See all &gt;
+            </button>
+          </div>
+
+          <div className="divide-y divide-[#ece5d5]">
+            {dailyTasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex min-w-0 items-center justify-between gap-2.5 py-2.5 first:pt-1 last:pb-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => onToggleTask(task.id)}
+                  className="flex min-h-[42px] min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+                >
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                      task.done
+                        ? "bg-[#067647] text-white"
+                        : "bg-[#f2eee2] text-[#212d3d]"
+                    }`}
+                  >
+                    {task.done ? (
+                      <CheckIcon className="h-4 w-4" />
+                    ) : (
+                      <span className="h-2 w-2 rounded-full bg-[#212d3d]" />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`truncate text-[13px] font-medium ${
+                        task.done
+                          ? "line-through text-[#5a6675]"
+                          : "text-[#212d3d]"
+                      }`}
+                    >
+                      {task.title}
+                    </p>
+                    <p className="text-[11px] text-[#5a6675]">
+                      {task.type} · {task.duration}
+                    </p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(task.targetSection)}
+                  className="shrink-0 cursor-pointer rounded-full bg-[#faf6ed] px-3 py-1 font-mono text-[11px] font-medium text-[#212d3d]"
+                >
+                  Open
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* DESKTOP AGORA COMMAND CENTER (lg+ Untouched) */}
+      <div className="hidden lg:block space-y-6">
       {/* 1. TRAVERTINE ALABASTER HEADER BAR (Preserves Signature Style + New Fonts) */}
       <div className="flex flex-col justify-between gap-4 rounded-[28px] border border-[#cfc4a7]/90 bg-gradient-to-b from-[#faf6ed]/92 to-[#efe7d5]/86 p-6 shadow-[0_16px_44px_-14px_rgba(33,45,61,0.14)] ring-1 ring-white/80 backdrop-blur-xl lg:flex-row lg:items-end lg:px-8 lg:py-6">
         <div>
@@ -199,7 +530,61 @@ export default function DashboardOverview({
           </h1>
         </div>
 
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-full border border-[#cfc4a7] bg-white/85 p-1 text-[11px]">
+            {(
+              [
+                { id: "7d", label: "7 Days" },
+                { id: "30d", label: "30 Days" },
+                { id: "all", label: "All Time" },
+              ] as const
+            ).map((h) => (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => setHorizon(h.id)}
+                className={`cursor-pointer rounded-full px-3 py-1 font-medium transition-colors ${
+                  horizon === h.id
+                    ? "bg-[#212d3d] text-[#faf6ed]"
+                    : "text-[#5a6675] hover:text-[#212d3d]"
+                }`}
+              >
+                {h.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowMathExplain((v) => !v)}
+            className="cursor-pointer rounded-full border border-[#cfc4a7] bg-white/85 px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+          >
+            {showMathExplain ? "Hide Score Math" : "How Fit Math Works"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowOffersModal((v) => !v)}
+            className="cursor-pointer rounded-full border border-[#cfc4a7] bg-white/85 px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+          >
+            {showOffersModal ? "Hide Offers" : "Compare Offers"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setInviteOpen((v) => !v)}
+            className="cursor-pointer rounded-full bg-[#212d3d] px-3.5 py-1.5 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#33445c]"
+          >
+            + Log Interview Invite
+          </button>
+        </div>
       </div>
+
+      {showMathExplain && (
+        <div className="rounded-[18px] border border-[#cfc4a7] bg-[#faf6ed] px-5 py-3.5 text-[12.5px] text-[#212d3d] flex flex-wrap items-center justify-between gap-3">
+          <p>
+            <strong>Fit &amp; Momentum Formula:</strong> Momentum ({careerMomentumScore}/100) combines completed daily tasks ({completedTasksCount}), mock drills ({mockSessionsCount}), and confirmed submissions ({submittedApps.length}). Prepared drafts remain excluded until verified or self-reported.
+          </p>
+          <StatusPill label={`Horizon: ${horizon.toUpperCase()}`} tone="navy" dot={false} />
+        </div>
+      )}
 
       {/* Conditional Quick Drawers */}
       {inviteOpen && (
@@ -208,20 +593,30 @@ export default function DashboardOverview({
           className="grid grid-cols-1 gap-3 rounded-[22px] border border-[#dad6ca] bg-white p-4 sm:grid-cols-3 sm:items-end"
         >
           <div>
-            <label className="text-[11.5px] font-medium text-[#5a6675]">
+            <label
+              htmlFor="overview-invite-company"
+              className="text-[11.5px] font-medium text-[#5a6675]"
+            >
               Company
             </label>
-            <input
+            <input aria-label="dashboardoverview input 1"
+              id="overview-invite-company"
+              name="inviteCompany"
               value={inviteCompany}
               onChange={(e) => setInviteCompany(e.target.value)}
               className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
             />
           </div>
           <div>
-            <label className="text-[11.5px] font-medium text-[#5a6675]">
+            <label
+              htmlFor="overview-invite-date"
+              className="text-[11.5px] font-medium text-[#5a6675]"
+            >
               Date &amp; time
             </label>
-            <input
+            <input aria-label="dashboardoverview input 2"
+              id="overview-invite-date"
+              name="inviteDate"
               value={inviteDate}
               onChange={(e) => setInviteDate(e.target.value)}
               className="mt-1 w-full rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-2 text-[13.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -295,6 +690,131 @@ export default function DashboardOverview({
           </div>
         </div>
       )}
+
+      {/* 2B. PERSONALIZED ACTION CENTER & 7-STAGE CAREER PROGRESS */}
+      <section className="rounded-[24px] border border-[#cfc4a7]/90 bg-[#fffef9]/90 p-5 shadow-xs space-y-4">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+          <div>
+            <Eyebrow label="Personalized Command Priorities · Contextual State" />
+            <h2 className="mt-0.5 font-serif-display text-[22px] text-[#212d3d]">
+              {!profileReady
+                ? "Confirm Your Baseline Role to Unlock Full Calibration"
+                : upcomingInterviews.length > 0
+                ? `${upcomingInterviews.length} Scheduled Interview(s) — Focus Sparring & Company Briefs`
+                : preparedApps.length > 0
+                ? `${preparedApps.length} Prepared Application Draft(s) Awaiting Final Review`
+                : "Discover High-Fit Opportunities & Close Skill Gaps"}
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {unresolvedFlagsCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onNavigate("documents")}
+                className="cursor-pointer rounded-full border border-[#b54708]/45 bg-[#b54708]/10 px-3.5 py-1.5 text-[11.5px] font-medium text-[#b54708]"
+              >
+                Resolve {unresolvedFlagsCount} CV Audit Flag(s) -&gt;
+              </button>
+            )}
+            <Link
+              href="/dashboard/documents/cover-letters"
+              className="rounded-full border border-[#cfc2a5] bg-[#faf6ed] px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+            >
+              Cicero Cover Letters
+            </Link>
+            <Link
+              href="/dashboard/apply"
+              className="rounded-full border border-[#cfc2a5] bg-[#faf6ed] px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+            >
+              Vex Apply Extension
+            </Link>
+            <Link
+              href="/dashboard/integrations/mcp"
+              className="rounded-full bg-[#212d3d] px-3.5 py-1.5 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#314158]"
+            >
+              MCP Forge &amp; Tools
+            </Link>
+          </div>
+        </div>
+
+        {/* 7-Stage Honest Career Journey Strip */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+          {[
+            {
+              step: "01",
+              name: "Discover",
+              done: visibleJobs.length > 0,
+              detail: `${visibleJobs.length} roles`,
+              onClick: () => onNavigate("jobs"),
+            },
+            {
+              step: "02",
+              name: "Analyze",
+              done: savedJobIds.length > 0,
+              detail: `${savedJobIds.length} shortlisted`,
+              onClick: () => onNavigate("jobs"),
+            },
+            {
+              step: "03",
+              name: "Prepare",
+              done: unresolvedFlagsCount === 0 || preparedApps.length > 0,
+              detail: `${preparedApps.length} packets`,
+              onClick: () => onNavigate("documents"),
+            },
+            {
+              step: "04",
+              name: "Apply",
+              done: submittedApps.length > 0,
+              detail: `${submittedApps.length} confirmed`,
+              onClick: () => onNavigate("applications"),
+            },
+            {
+              step: "05",
+              name: "Interview",
+              done: upcomingInterviews.length > 0 || mockSessionsCount > 0,
+              detail: `${upcomingInterviews.length} scheduled`,
+              onClick: () => onNavigate("interviews"),
+            },
+            {
+              step: "06",
+              name: "Learn",
+              done: completedTasksCount > 0,
+              detail: "Active track",
+              onClick: () => onNavigate("learning"),
+            },
+            {
+              step: "07",
+              name: "Get Hired",
+              done: applications.some((a) => a.stage === "Offer"),
+              detail: applications.some((a) => a.stage === "Offer")
+                ? "Offer logged"
+                : "In progress",
+              onClick: () => setShowOffersModal(true),
+            },
+          ].map((st) => (
+            <button
+              key={st.step}
+              type="button"
+              onClick={st.onClick}
+              className={`cursor-pointer rounded-[14px] border px-3 py-2 text-left transition-all hover:border-[#212d3d] ${
+                st.done
+                  ? "border-[#067647]/35 bg-[#067647]/8"
+                  : "border-[#dfd4be] bg-[#faf6ed]"
+              }`}
+            >
+              <div className="flex items-center justify-between font-mono text-[9.5px] uppercase text-[#7a6b4e]">
+                <span>{st.step}</span>
+                <span>{st.done ? "ACTIVE" : "NEXT"}</span>
+              </div>
+              <p className="mt-0.5 text-[13px] font-medium text-[#212d3d]">
+                {st.name}
+              </p>
+              <p className="text-[11px] text-[#5a6675]">{st.detail}</p>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* 3. SIGNATURE 5-CARD BENTO GRID WITH REAL INTERACTIVE CANVAS CHARTS */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -972,6 +1492,7 @@ export default function DashboardOverview({
           </AnimatePresence>
         </div>
       </section>
+      </div>
     </div>
   );
 }

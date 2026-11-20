@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   INITIAL_COMPANY_INTEL,
   type NetworkContact,
 } from "@/data/dashboard";
 import Eyebrow from "@/components/Eyebrow";
 import { StatusPill } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
 
 interface NetworkViewProps {
   contacts: NetworkContact[];
@@ -208,6 +210,13 @@ export default function NetworkView({
         <div className="grid grid-cols-1 items-center gap-6 p-5 sm:p-7 lg:grid-cols-12">
           {/* Left: Clean Editorial Copy + Interactive Action Buttons */}
           <div className="space-y-5 lg:col-span-7">
+            <MobilePhilosopherPill
+              name="Plato"
+              role="Stoa Council"
+              image={activeFresco.src}
+              quote={activeFresco.quote}
+              guidance={`${contacts.length} warm contacts · ${INITIAL_COMPANY_INTEL.length} target companies tracked cleanly.`}
+            />
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Eyebrow label="The Academy · Network & Council" />
@@ -345,8 +354,8 @@ export default function NetworkView({
             </div>
           </div>
 
-          {/* Right: Arched Dual-Artwork Classical Showcase */}
-          <div className="flex flex-col items-center gap-3 lg:col-span-5">
+          {/* Right: Arched Dual-Artwork Classical Showcase (Desktop Only) */}
+          <div className="hidden flex-col items-center gap-3 lg:col-span-5 lg:flex">
             <div className="relative w-full max-w-[330px] overflow-hidden rounded-t-[165px] rounded-b-[20px] border border-[#cfc2a5] bg-[#e9e0cc] shadow-[0_14px_34px_rgba(33,45,61,0.1)]">
               <div className="aspect-[3/4] w-full overflow-hidden">
                 <img
@@ -407,7 +416,7 @@ export default function NetworkView({
         {/* Toolbar Bar */}
         <div className="flex flex-col justify-between gap-3 border-b border-[#ece5d5] bg-[#faf6ed]/70 px-5 py-3.5 sm:flex-row sm:items-center">
           <div className="flex flex-1 items-center gap-2">
-            <input
+            <input id="networkview-input-1" name="networkview-input-1" aria-label="networkview input 1"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -477,27 +486,27 @@ export default function NetworkView({
               </button>
             </div>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-4">
-              <input
+              <input id="networkview-input-2" name="networkview-input-2" aria-label="networkview input 2"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Contact name *"
                 className="rounded-[12px] border border-[#dad6ca] bg-white px-3 py-2 text-[12.5px] focus:border-[#212d3d] focus:outline-none"
               />
-              <input
+              <input id="networkview-input-3" name="networkview-input-3" aria-label="networkview input 3"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="Role (e.g. Staff Eng)"
                 className="rounded-[12px] border border-[#dad6ca] bg-white px-3 py-2 text-[12.5px] focus:border-[#212d3d] focus:outline-none"
               />
-              <input
+              <input id="networkview-input-4" name="networkview-input-4" aria-label="networkview input 4"
                 required
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Company *"
                 className="rounded-[12px] border border-[#dad6ca] bg-white px-3 py-2 text-[12.5px] focus:border-[#212d3d] focus:outline-none"
               />
-              <select
+              <select id="networkview-select-5" name="networkview-select-5" aria-label="networkview select 5"
                 value={referralPath}
                 onChange={(e) => setReferralPath(e.target.value)}
                 className="cursor-pointer rounded-[12px] border border-[#dad6ca] bg-white px-3 py-2 text-[12.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
@@ -513,7 +522,7 @@ export default function NetworkView({
               </select>
             </div>
             <div className="flex flex-col gap-2.5 sm:flex-row">
-              <input
+              <input id="networkview-input-6" name="networkview-input-6" aria-label="networkview input 6"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Follow-up context or mutual topic..."
@@ -634,13 +643,19 @@ export default function NetworkView({
                         >
                           {isDraftOpen ? "Hide Draft" : "Draft Intro"}
                         </button>
+                        <Link
+                          href={`/dashboard/network/contacts/${c.id}`}
+                          className="rounded-full border border-[#d8ceb9] bg-white px-3 py-1 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+                        >
+                          Dossier -&gt;
+                        </Link>
                       </div>
                     </div>
 
                     {/* Inline Expandable Quick-Send Note */}
                     {isDraftOpen && (
                       <div className="mt-3 flex flex-col gap-2 rounded-[14px] border border-[#dcd2bd] bg-[#faf6ed] p-3 sm:flex-row sm:items-center">
-                        <input
+                        <input id="networkview-input-7" name="networkview-input-7" aria-label="networkview input 7"
                           value={draftTexts[c.id] ?? ""}
                           onChange={(e) =>
                             setDraftTexts((prev) => ({
@@ -731,6 +746,12 @@ export default function NetworkView({
                     >
                       + Add Contact Here
                     </button>
+                    <Link
+                      href={`/dashboard/companies/${co.id}`}
+                      className="rounded-full border border-[#212d3d]/25 bg-white px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+                    >
+                      Athena Intel -&gt;
+                    </Link>
                   </div>
                 </div>
               );

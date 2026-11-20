@@ -100,7 +100,7 @@ export default function AccountPrivacyView({
               <label className="block text-[12.5px] font-medium text-[#212d3d]">
                 Full name
               </label>
-              <input
+              <input id="accountprivacyview-input-1" name="accountprivacyview-input-1" aria-label="accountprivacyview input 1"
                 type="text"
                 value={draft.name}
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
@@ -111,7 +111,7 @@ export default function AccountPrivacyView({
               <label className="block text-[12.5px] font-medium text-[#212d3d]">
                 Workspace email
               </label>
-              <input
+              <input id="accountprivacyview-input-2" name="accountprivacyview-input-2" aria-label="accountprivacyview input 2"
                 type="email"
                 value={draft.email}
                 onChange={(e) => setDraft({ ...draft, email: e.target.value })}
@@ -122,7 +122,7 @@ export default function AccountPrivacyView({
               <label className="block text-[12.5px] font-medium text-[#212d3d]">
                 Target role
               </label>
-              <input
+              <input id="accountprivacyview-input-3" name="accountprivacyview-input-3" aria-label="accountprivacyview input 3"
                 type="text"
                 value={draft.targetRole}
                 onChange={(e) => setDraft({ ...draft, targetRole: e.target.value })}
@@ -133,7 +133,7 @@ export default function AccountPrivacyView({
               <label className="block text-[12.5px] font-medium text-[#212d3d]">
                 Work arrangement preference
               </label>
-              <input
+              <input id="accountprivacyview-input-4" name="accountprivacyview-input-4" aria-label="accountprivacyview input 4"
                 type="text"
                 value={draft.workMode}
                 onChange={(e) => setDraft({ ...draft, workMode: e.target.value })}
@@ -146,7 +146,7 @@ export default function AccountPrivacyView({
             <label className="block text-[12.5px] font-medium text-[#212d3d]">
               Confirmed baseline facts (reused in CV diffs &amp; autofill)
             </label>
-            <textarea
+            <textarea id="accountprivacyview-textarea-5" name="accountprivacyview-textarea-5" aria-label="accountprivacyview textarea 5"
               rows={3}
               value={draft.cvExcerpt}
               onChange={(e) => setDraft({ ...draft, cvExcerpt: e.target.value })}

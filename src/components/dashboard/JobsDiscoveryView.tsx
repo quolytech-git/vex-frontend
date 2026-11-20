@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useId, useMemo, useState } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
+import { useVexWorkspace } from "@/lib/vex-store";
 import {
   AnimatePresence,
   motion,
@@ -17,6 +19,8 @@ import {
 import Eyebrow from "@/components/Eyebrow";
 import { ArrowRightIcon, CheckIcon } from "@/components/Icons";
 import { FitBandBadge, StatusPill } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
+import MobileSheet from "@/components/mobile/MobileSheet";
 
 interface JobsDiscoveryViewProps {
   jobs: DashboardJob[];
@@ -822,6 +826,9 @@ export default function JobsDiscoveryView({
   const [sourceFilter, setSourceFilter] = useState<string>("All");
   const [employmentFilter, setEmploymentFilter] = useState<string>("All");
   const [levelFilter, setLevelFilter] = useState<string>("All");
+  const [industryFilter, setIndustryFilter] = useState<string>("All");
+  const [minSalaryK, setMinSalaryK] = useState<number>(0);
+  const [sortBy, setSortBy] = useState<"compatibility" | "company" | "deadline">("compatibility");
   const [hideStale, setHideStale] = useState(false);
   const [onlySalaryDisclosed, setOnlySalaryDisclosed] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string>(jobs[0]?.id || "");
@@ -830,6 +837,25 @@ export default function JobsDiscoveryView({
   ]);
   const [showMergedSources, setShowMergedSources] = useState(false);
   const [alertSavedMsg, setAlertSavedMsg] = useState("");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  function toggleCompareJob(id: string) {
+    setCompareIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : prev.length >= 3
+        ? [...prev.slice(1), id]
+        : [...prev, id]
+    );
+  }
+  const comparedJobs = jobs.filter((j) => compareIds.includes(j.id));
+  const {
+    savedSearches,
+    addSavedSearch,
+    deleteSavedSearch,
+    toggleSavedSearchAlert,
+    markJobViewed,
+  } = useVexWorkspace();
 
   // Pergament Swipe Deck State
   const [reviewedInSessionIds, setReviewedInSessionIds] = useState<string[]>(
@@ -852,27 +878,60 @@ export default function JobsDiscoveryView({
     "Examine each pergament calmly. Drag right (Amor Fati) to claim it, or left (Ataraxia) to pass."
   );
 
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"all" | "saved" | "passed">("all");
+
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setDiscoveryMode("matrix");
+    }
   }, []);
 
   function selectJob(jobId: string) {
     setSelectedJobId(jobId);
+    markJobViewed(jobId);
     setRecentlyViewedIds((prev) => [
       jobId,
       ...prev.filter((id) => id !== jobId).slice(0, 3),
     ]);
   }
 
+  function resetAllFilters() {
+    setQuery("");
+    setArrangementFilter("All");
+    setSourceFilter("All");
+    setEmploymentFilter("All");
+    setLevelFilter("All");
+    setIndustryFilter("All");
+    setMinSalaryK(0);
+    setHideStale(false);
+    setOnlySalaryDisclosed(false);
+  }
+
+  const industries = useMemo(
+    () => Array.from(new Set(jobs.map((j) => j.industry))),
+    [jobs]
+  );
+
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    const base = jobs.filter((job) => {
       if (hiddenJobIds.includes(job.id)) return false;
       if (hideStale && job.isStale) return false;
       if (onlySalaryDisclosed && !job.salary) return false;
+      if (minSalaryK > 0) {
+        const nums = (job.salary || "").match(/\d+/g)?.map(Number) || [];
+        const maxNum = nums.length ? Math.max(...nums) : 0;
+        const normalizedK = maxNum > 999 ? Math.round(maxNum / 1000) : maxNum;
+        if (normalizedK < minSalaryK) return false;
+      }
       if (arrangementFilter !== "All" && job.arrangement !== arrangementFilter) {
         return false;
       }
       if (sourceFilter !== "All" && job.source !== sourceFilter) {
+        return false;
+      }
+      if (industryFilter !== "All" && job.industry !== industryFilter) {
         return false;
       }
       if (
@@ -887,21 +946,34 @@ export default function JobsDiscoveryView({
       if (query.trim()) {
         const q = query.trim().toLowerCase();
         const hay =
-          `${job.title} ${job.company} ${job.location} ${job.source} ${job.industry}`.toLowerCase();
+          `${job.title} ${job.company} ${job.location} ${job.source} ${job.industry} ${job.matchingSkills.join(" ")}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
+
+    if (sortBy === "company") {
+      return [...base].sort((a, b) => a.company.localeCompare(b.company));
+    }
+    if (sortBy === "deadline") {
+      return [...base].sort((a, b) =>
+        (a.deadline || "zzz").localeCompare(b.deadline || "zzz")
+      );
+    }
+    return [...base].sort((a, b) => b.compatibilityScore - a.compatibilityScore);
   }, [
     jobs,
     hiddenJobIds,
     hideStale,
     onlySalaryDisclosed,
+    minSalaryK,
     arrangementFilter,
     sourceFilter,
+    industryFilter,
     employmentFilter,
     levelFilter,
     query,
+    sortBy,
   ]);
 
   const deckPoolJobs = useMemo(() => {
@@ -1070,8 +1142,257 @@ export default function JobsDiscoveryView({
     .map((id) => jobs.find((j) => j.id === id))
     .filter((j): j is DashboardJob => Boolean(j));
 
+  const mobileFeedJobs = useMemo(() => {
+    if (mobileTab === "saved") {
+      return jobs.filter(
+        (j) => savedJobIds.includes(j.id) && !hiddenJobIds.includes(j.id)
+      );
+    }
+    if (mobileTab === "passed") {
+      return jobs.filter((j) => hiddenJobIds.includes(j.id));
+    }
+    return filteredJobs;
+  }, [jobs, filteredJobs, savedJobIds, hiddenJobIds, mobileTab]);
+
   return (
-    <div className="space-y-6">
+    <div>
+      {/* MOBILE APPLE-HIG JOBS FEED (< lg) */}
+      <div className="space-y-4 lg:hidden">
+        {/* Search + Filter Sheet + Swipe Trigger */}
+        <div className="ios-card p-3.5 space-y-3">
+          <div className="flex items-center gap-2">
+            <input
+              id="mobile-jobs-search"
+              name="mobileJobsSearch"
+              type="search"
+              aria-label="Search mobile job feed"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search role, company, or location..."
+              className="min-h-[42px] flex-1 rounded-full border border-[#d8cbb0] bg-[#faf6ed] px-4 text-[13px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="min-h-[42px] shrink-0 cursor-pointer rounded-full border border-[#cfc2a5] bg-white px-3.5 text-[12px] font-medium text-[#212d3d]"
+            >
+              Filters
+            </button>
+          </div>
+
+          <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-0.5">
+            {(
+              [
+                { id: "all", label: `Feed (${filteredJobs.length})` },
+                { id: "saved", label: `Saved (${savedJobIds.length})` },
+                { id: "passed", label: `Passed (${hiddenJobIds.length})` },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setMobileTab(t.id)}
+                className={`min-h-[36px] shrink-0 cursor-pointer rounded-full px-3.5 py-1 text-[12px] font-medium ${
+                  mobileTab === t.id
+                    ? "bg-[#212d3d] text-[#faf6ed]"
+                    : "bg-[#f2eee2] text-[#5a6675]"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setDiscoveryMode("swipe")}
+              className="min-h-[36px] shrink-0 cursor-pointer rounded-full border border-[#b88b32]/40 bg-[#faf6ed] px-3.5 py-1 text-[12px] font-medium text-[#7a6b4e]"
+            >
+              Swipe Mode ({swipeDeck.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Hermes Compact Mentor Insight */}
+        <MobilePhilosopherPill
+          name="Hermes"
+          role="Opportunity Scout"
+          image="/images/hermes-messenger-alerts.jpg"
+          quote="Prioritise 85%+ fit roles cleanly merged from verified public boards."
+          guidance="Save high-alignment roles to unlock Athena's skill-gap breakdown and prepare tailored CV packets without guesswork."
+        />
+
+        {/* Mobile Stacked Opportunity Cards */}
+        {mobileFeedJobs.length === 0 ? (
+          <div className="ios-card p-6 text-center space-y-2.5">
+            <p className="font-serif-display text-[20px] text-[#212d3d]">
+              No roles in this view
+            </p>
+            <p className="text-[12.5px] text-[#5a6675]">
+              Adjust your search filters or switch tabs to browse active openings.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                resetAllFilters();
+                setMobileTab("all");
+              }}
+              className="min-h-[40px] cursor-pointer rounded-full bg-[#212d3d] px-4 py-1.5 text-[12px] font-medium text-[#faf6ed]"
+            >
+              Reset All Filters
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {mobileFeedJobs.map((job) => {
+              const isSaved = savedJobIds.includes(job.id);
+              const isHidden = hiddenJobIds.includes(job.id);
+              return (
+                <article key={job.id} className="ios-card p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[10px] uppercase text-[#7a6b4e]">
+                        {job.company} · {job.arrangement}
+                      </p>
+                      <h2 className="mt-0.5 font-serif-display text-[21px] leading-snug text-[#212d3d]">
+                        {job.title}
+                      </h2>
+                      <p className="mt-0.5 text-[12px] text-[#5a6675]">
+                        {job.location} · {job.salary || "Salary unlisted"}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="font-serif-display text-[24px] leading-none text-[#212d3d]">
+                        {job.compatibilityScore}%
+                      </span>
+                      <div className="mt-1">
+                        <FitBandBadge band={job.fitBand} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.matchingSkills.slice(0, 3).map((sk) => (
+                      <span
+                        key={sk}
+                        className="rounded-full bg-[#f2eee2] px-2.5 py-0.5 text-[11px] text-[#212d3d]"
+                      >
+                        {sk}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 border-t border-[#ece5d5] pt-3">
+                    {isHidden ? (
+                      <button
+                        type="button"
+                        onClick={() => onUnhideJob?.(job.id)}
+                        className="min-h-[40px] cursor-pointer rounded-full border border-[#cfc2a5] bg-[#faf6ed] px-4 text-[12px] font-medium text-[#212d3d]"
+                      >
+                        Restore Role
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onToggleSave(job.id)}
+                        className={`min-h-[40px] cursor-pointer rounded-full px-4 text-[12px] font-medium ${
+                          isSaved
+                            ? "bg-[#067647] text-white"
+                            : "border border-[#cfc2a5] bg-[#faf6ed] text-[#212d3d]"
+                        }`}
+                      >
+                        {isSaved ? "Saved ✓" : "Save"}
+                      </button>
+                    )}
+
+                    <Link
+                      href={`/dashboard/jobs/${job.id}`}
+                      className="inline-flex min-h-[40px] flex-1 items-center justify-center rounded-full bg-[#212d3d] px-4 text-[12px] font-medium text-[#faf6ed]"
+                    >
+                      Open Athena Brief -&gt;
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Mobile Bottom Sheet Filters */}
+        <MobileSheet
+          open={mobileFiltersOpen}
+          onClose={() => setMobileFiltersOpen(false)}
+          title="Filter Opportunities"
+          subtitle="Hermes Job Lenses"
+        >
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <p className="font-mono text-[10px] uppercase text-[#7a6b4e]">
+                Work Arrangement
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {["All", "Remote UK", "Hybrid", "London On-site"].map((arr) => (
+                  <button
+                    key={arr}
+                    type="button"
+                    onClick={() => setArrangementFilter(arr)}
+                    className={`min-h-[38px] cursor-pointer rounded-full px-3.5 text-[12px] font-medium ${
+                      arrangementFilter === arr
+                        ? "bg-[#212d3d] text-[#faf6ed]"
+                        : "border border-[#dad6ca] bg-white text-[#212d3d]"
+                    }`}
+                  >
+                    {arr}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="font-mono text-[10px] uppercase text-[#7a6b4e]">
+                Experience Level
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {["All", "Entry", "Mid", "Senior"].map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setLevelFilter(lvl)}
+                    className={`min-h-[38px] cursor-pointer rounded-full px-3.5 text-[12px] font-medium ${
+                      levelFilter === lvl
+                        ? "bg-[#212d3d] text-[#faf6ed]"
+                        : "border border-[#dad6ca] bg-white text-[#212d3d]"
+                    }`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  resetAllFilters();
+                  setMobileFiltersOpen(false);
+                }}
+                className="min-h-[44px] flex-1 cursor-pointer rounded-full border border-[#cfc2a5] bg-white text-[12.5px] font-medium text-[#212d3d]"
+              >
+                Reset All
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="min-h-[44px] flex-1 cursor-pointer rounded-full bg-[#212d3d] text-[12.5px] font-medium text-[#faf6ed]"
+              >
+                Apply Filters ({filteredJobs.length})
+              </button>
+            </div>
+          </div>
+        </MobileSheet>
+      </div>
+
+      {/* DESKTOP AGORA JOBS BOARD & PERGAMENT CODEX (lg+ Untouched) */}
+      <div className="hidden lg:block space-y-6">
       {/* Header + Mode Switcher + Adaptive Pergament Lens Strip */}
       <div className="rounded-[24px] border border-[#cfc4a7] bg-gradient-to-br from-[#faf6ed]/94 via-[#f6efdf]/90 to-[#efe6d1]/92 p-6 shadow-[0_14px_34px_rgba(33,45,61,0.08)] backdrop-blur-md">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -1129,7 +1450,7 @@ export default function JobsDiscoveryView({
 
           <div className="rounded-[20px] border border-[#dad6ca] bg-white p-4 space-y-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <input
+              <input id="jobsdiscoveryview-input-1" name="jobsdiscoveryview-input-1" aria-label="jobsdiscoveryview input 1"
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -1139,63 +1460,165 @@ export default function JobsDiscoveryView({
               <button
                 type="button"
                 onClick={() => {
+                  addSavedSearch({
+                    label: query.trim() || `${arrangementFilter} ${levelFilter} Roles`,
+                    query: query.trim(),
+                    arrangement:
+                      arrangementFilter === "Remote UK"
+                        ? "Remote"
+                        : arrangementFilter === "Hybrid"
+                        ? "Hybrid"
+                        : arrangementFilter === "London On-site"
+                        ? "On-site"
+                        : "All",
+                    experience:
+                      levelFilter === "Entry" ||
+                      levelFilter === "Mid" ||
+                      levelFilter === "Senior"
+                        ? levelFilter
+                        : "All",
+                    minSalaryK,
+                    alertEnabled: true,
+                  });
                   setAlertSavedMsg(
-                    "Saved current search filters as a recurring alert in Alerts."
+                    "Saved current search & filters under Saved Searches below."
                   );
                   setTimeout(() => setAlertSavedMsg(""), 3500);
                 }}
                 className="cursor-pointer rounded-full border border-[#212d3d]/25 bg-[#faf6ed] px-4 py-2 text-[12px] font-medium text-[#212d3d] hover:border-[#212d3d]"
               >
-                Save search alert
+                Save search
+              </button>
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                className="cursor-pointer rounded-full border border-[#dad6ca] bg-white px-3.5 py-2 text-[12px] text-[#5a6675] hover:border-[#212d3d] hover:text-[#212d3d]"
+              >
+                Clear filters
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-4">
-              <select
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+              <select id="jobsdiscoveryview-select-2" name="jobsdiscoveryview-select-2" aria-label="jobsdiscoveryview select 2"
                 value={arrangementFilter}
                 onChange={(e) => setArrangementFilter(e.target.value)}
-                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
               >
                 <option value="All">All locations</option>
                 <option value="Hybrid">Hybrid</option>
                 <option value="Remote UK">Remote UK</option>
                 <option value="London On-site">London On-site</option>
               </select>
-              <select
+              <select id="jobsdiscoveryview-select-3" name="jobsdiscoveryview-select-3" aria-label="jobsdiscoveryview select 3"
+                value={industryFilter}
+                onChange={(e) => setIndustryFilter(e.target.value)}
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+              >
+                <option value="All">All industries</option>
+                {industries.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
+                  </option>
+                ))}
+              </select>
+              <select id="jobsdiscoveryview-select-4" name="jobsdiscoveryview-select-4" aria-label="jobsdiscoveryview select 4"
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
-                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
               >
-                <option value="All">
-                  All sources (RemoteOK, HN, GitHub, Boards)
-                </option>
+                <option value="All">All sources</option>
                 <option value="RemoteOK">RemoteOK</option>
                 <option value="Hacker News">Hacker News</option>
                 <option value="GitHub">GitHub</option>
-                <option value="Employer Career Board">
-                  Employer Career Board
-                </option>
+                <option value="Employer Career Board">Employer Career Board</option>
               </select>
-              <select
+              <select id="jobsdiscoveryview-select-5" name="jobsdiscoveryview-select-5" aria-label="jobsdiscoveryview select 5"
                 value={employmentFilter}
                 onChange={(e) => setEmploymentFilter(e.target.value)}
-                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
               >
                 <option value="All">All employment types</option>
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
                 <option value="Internship">Internship</option>
               </select>
-              <select
+              <select id="jobsdiscoveryview-select-6" name="jobsdiscoveryview-select-6" aria-label="jobsdiscoveryview select 6"
                 value={levelFilter}
                 onChange={(e) => setLevelFilter(e.target.value)}
-                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12.5px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
               >
                 <option value="All">All experience levels</option>
                 <option value="Entry">Entry level</option>
                 <option value="Mid">Mid level</option>
                 <option value="Senior">Senior level</option>
               </select>
+              <select id="jobsdiscoveryview-select-7" name="jobsdiscoveryview-select-7" aria-label="jobsdiscoveryview select 7"
+                value={String(minSalaryK)}
+                onChange={(e) => setMinSalaryK(Number(e.target.value))}
+                className="cursor-pointer rounded-[10px] border border-[#dad6ca] bg-[#faf6ed] px-3 py-1.5 text-[12px] text-[#212d3d] focus:border-[#212d3d] focus:outline-none"
+              >
+                <option value="0">Any salary band</option>
+                <option value="55">Min £55k+</option>
+                <option value="65">Min £65k+</option>
+                <option value="75">Min £75k+</option>
+              </select>
+            </div>
+
+            {/* Saved Searches + Sort Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#ece9df] pt-2.5 text-[11.5px]">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-medium text-[#5a6675]">Saved searches:</span>
+                {savedSearches.map((ss) => (
+                  <span
+                    key={ss.id}
+                    className="inline-flex items-center gap-1 rounded-full border border-[#dfd4be] bg-[#faf6ed] px-2.5 py-0.5 text-[#212d3d]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery(ss.query);
+                        setMinSalaryK(ss.minSalaryK);
+                        setDiscoveryMode("matrix");
+                      }}
+                      className="cursor-pointer font-medium hover:underline"
+                    >
+                      {ss.label}
+                    </button>
+                    <button
+                      type="button"
+                      title={ss.alertEnabled ? "Mute alert" : "Enable alert"}
+                      onClick={() => toggleSavedSearchAlert(ss.id)}
+                      className="cursor-pointer font-mono text-[10px] text-[#067647]"
+                    >
+                      [{ss.alertEnabled ? "Alert On" : "Muted"}]
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Remove saved search ${ss.label}`}
+                      onClick={() => deleteSavedSearch(ss.id)}
+                      className="cursor-pointer px-0.5 text-[#7a6b4e] hover:text-[#b42318]"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#5a6675]">Sort:</span>
+                <select id="jobsdiscoveryview-select-8" name="jobsdiscoveryview-select-8" aria-label="jobsdiscoveryview select 8"
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(
+                      e.target.value as "compatibility" | "company" | "deadline"
+                    )
+                  }
+                  className="cursor-pointer rounded-full border border-[#dad6ca] bg-[#faf6ed] px-3 py-1 text-[11.5px] font-medium text-[#212d3d]"
+                >
+                  <option value="compatibility">Highest Fit %</option>
+                  <option value="deadline">Soonest Deadline</option>
+                  <option value="company">Company A-Z</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[12px]">
@@ -1261,6 +1684,23 @@ export default function JobsDiscoveryView({
           {/* Two-Column Matrix */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5 space-y-3">
+              {filteredJobs.length === 0 && (
+                <div className="rounded-[20px] border border-dashed border-[#cfc2a5] bg-[#faf6ed] p-6 text-center space-y-3">
+                  <p className="font-serif-display text-[20px] text-[#212d3d]">
+                    No matching opportunities in this filter set.
+                  </p>
+                  <p className="text-[12.5px] text-[#5a6675]">
+                    Try lowering your minimum salary band, showing stale roles, or resetting search criteria.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={resetAllFilters}
+                    className="cursor-pointer rounded-full bg-[#212d3d] px-4 py-1.5 text-[12px] font-medium text-[#faf6ed]"
+                  >
+                    Reset all filters
+                  </button>
+                </div>
+              )}
               {filteredJobs.map((job) => {
                 const isActive = activeJob?.id === job.id;
                 const isSaved = savedJobIds.includes(job.id);
@@ -1320,16 +1760,32 @@ export default function JobsDiscoveryView({
                       >
                         {isSaved ? "Amor Fati [Saved]" : "Smash / Save"}
                       </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onHideJob(job.id);
-                        }}
-                        className="cursor-pointer text-[11.5px] text-[#5a6675] hover:text-[#b42318]"
-                      >
-                        Ataraxia (Pass)
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCompareJob(job.id);
+                          }}
+                          className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                            compareIds.includes(job.id)
+                              ? "border border-[#175cd3] bg-[#175cd3]/10 text-[#175cd3]"
+                              : "border border-[#dad6ca] bg-white text-[#5a6675] hover:text-[#212d3d]"
+                          }`}
+                        >
+                          {compareIds.includes(job.id) ? "Comparing [x]" : "+ Compare"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onHideJob(job.id);
+                          }}
+                          className="cursor-pointer text-[11.5px] text-[#5a6675] hover:text-[#b42318]"
+                        >
+                          Ataraxia (Pass)
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1362,14 +1818,22 @@ export default function JobsDiscoveryView({
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => onPrepareApplication(activeJob)}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#212d3d] px-4 py-2 text-[12.5px] font-medium text-[#faf6ed] hover:bg-[#33445c]"
-                    >
-                      <span>Prepare tailored application</span>
-                      <ArrowRightIcon className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/dashboard/jobs/${activeJob.id}`}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#cfc4a7] bg-[#faf6ed] px-3.5 py-2 text-[12px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+                      >
+                        Athena Full Job Page
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => onPrepareApplication(activeJob)}
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#212d3d] px-4 py-2 text-[12.5px] font-medium text-[#faf6ed] hover:bg-[#33445c]"
+                      >
+                        <span>Prepare tailored application</span>
+                        <ArrowRightIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Probability of Getting This Job Percentage + Graph */}
@@ -1429,6 +1893,63 @@ export default function JobsDiscoveryView({
               )}
             </div>
           </div>
+
+      {comparedJobs.length > 0 && (
+        <section className="mt-6 rounded-[22px] border border-[#cfc4a7] bg-[#faf6ed] p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#dfd4be] pb-3">
+            <div>
+              <Eyebrow label="Athena Side-by-Side Comparison Matrix" />
+              <h3 className="mt-0.5 font-serif-display text-[22px] text-[#212d3d]">
+                Comparing {comparedJobs.length} Opportunities
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCompareIds([])}
+              className="cursor-pointer rounded-full border border-[#cfc2a5] bg-white px-3.5 py-1 text-[11.5px] font-medium text-[#212d3d]"
+            >
+              Clear Comparison
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {comparedJobs.map((cj) => (
+              <div
+                key={cj.id}
+                className="flex flex-col justify-between rounded-[16px] border border-[#dad6ca] bg-white p-4 space-y-2.5"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <FitBandBadge band={cj.fitBand} />
+                    <span className="font-serif-display text-[22px] text-[#212d3d]">
+                      {cj.compatibilityScore}%
+                    </span>
+                  </div>
+                  <p className="text-[14.5px] font-medium text-[#212d3d]">{cj.title}</p>
+                  <p className="text-[12px] text-[#5a6675]">
+                    {cj.company} · {cj.arrangement} · {cj.salary || "Undisclosed"}
+                  </p>
+                  <p className="text-[11.5px] text-[#067647]">
+                    <strong>Matches:</strong> {cj.matchingSkills.slice(0, 3).join(", ")}
+                  </p>
+                  <p className="text-[11.5px] text-[#b54708]">
+                    <strong>Gaps:</strong> {cj.skillsToImprove.join(", ") || "None"}
+                  </p>
+                  <p className="font-mono text-[10.5px] text-[#7a6b4e]">
+                    Deadline: {cj.deadline || "Rolling"} · {cj.source}
+                  </p>
+                </div>
+                <Link
+                  href={`/dashboard/jobs/${cj.id}`}
+                  className="inline-flex justify-center rounded-full bg-[#212d3d] px-3 py-1.5 text-[11.5px] font-medium text-[#faf6ed]"
+                >
+                  Athena Deep Analysis -&gt;
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+      </div>
 
       {/* CENTERED NO-SCROLL BLURRED SPOTLIGHT MODAL OVER ENTIRE WORKSPACE */}
       {isMounted &&

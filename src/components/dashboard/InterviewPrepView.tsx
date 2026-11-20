@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import type { DashboardApplication } from "@/data/dashboard";
 import Eyebrow from "@/components/Eyebrow";
 import { ArrowRightIcon, CheckIcon } from "@/components/Icons";
 import { StatusPill } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
 
 interface InterviewPrepViewProps {
   applications: DashboardApplication[];
@@ -269,15 +271,30 @@ export default function InterviewPrepView({
               tone="info"
               dot={false}
             />
+            <Link
+              href={`/dashboard/interviews/session/${activeApp?.id || "sess-1"}`}
+              className="rounded-full bg-[#212d3d] px-3.5 py-1.5 text-[11.5px] font-medium text-[#faf6ed] hover:bg-[#314158]"
+            >
+              Live Voice/Text Session -&gt;
+            </Link>
+            <Link
+              href="/dashboard/interviews/sess-meridian-1/report"
+              className="rounded-full border border-[#cfc2a5] bg-white px-3.5 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+            >
+              Analytics Report
+            </Link>
           </div>
         </div>
 
         {/* Applied Jobs Strip ("the jobs he is applying to") */}
         <div className="space-y-2 border-t border-[#e5dac2] pt-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between max-lg:flex-col max-lg:items-start max-lg:gap-0.5">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#7a6b4e]">
-              Active Applications In Your Pipeline ({applications.length}) — Select
-              Role To Rehearse
+              <span className="lg:hidden">Pick a role to rehearse ({applications.length})</span>
+              <span className="hidden lg:inline">
+                Active Applications In Your Pipeline ({applications.length}) — Select
+                Role To Rehearse
+              </span>
             </p>
             {activeApp?.interviewDate && (
               <span className="font-mono text-[11px] font-semibold text-[#067647]">
@@ -462,7 +479,7 @@ export default function InterviewPrepView({
               </div>
             </div>
 
-            <textarea
+            <textarea id="interviewprepview-textarea-1" name="interviewprepview-textarea-1" aria-label="interviewprepview textarea 1"
               rows={5}
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}
@@ -567,8 +584,8 @@ export default function InterviewPrepView({
               })}
             </div>
 
-            {/* Featured Arched Classical Portrait */}
-            <div className="overflow-hidden rounded-t-[110px] rounded-b-[16px] border border-[#cfc2a5] bg-[#e9e0cc]">
+            {/* Featured Arched Classical Portrait (Desktop Only) */}
+            <div className="hidden overflow-hidden rounded-t-[110px] rounded-b-[16px] border border-[#cfc2a5] bg-[#e9e0cc] lg:block">
               <div className="aspect-[16/10] w-full overflow-hidden">
                 <img
                   src={activeMentor.image}
@@ -585,6 +602,13 @@ export default function InterviewPrepView({
                 </p>
               </div>
             </div>
+            <MobilePhilosopherPill
+              name={activeMentor.name}
+              role={activeMentor.discipline}
+              image={activeMentor.image}
+              quote={activeMentor.maxim}
+              guidance="Practise out loud with the 2-minute timer and STAR outline before saving your evaluation."
+            />
           </div>
 
           {/* Bottom Tabbed Companion Workspace (Replaces 3 separate stacked boxes) */}
@@ -676,7 +700,7 @@ export default function InterviewPrepView({
 
             {companionTab === "followup" && (
               <div className="space-y-2.5">
-                <textarea
+                <textarea id="interviewprepview-textarea-2" name="interviewprepview-textarea-2" aria-label="interviewprepview textarea 2"
                   rows={3}
                   value={reflectionNote}
                   onChange={(e) => {

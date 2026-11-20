@@ -12,7 +12,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         duration: 0.34,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="origin-top will-change-transform"
+      className="origin-top"
     >
       {children}
     </motion.div>

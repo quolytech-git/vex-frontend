@@ -5,6 +5,7 @@ import type { AlertItem, DashboardSectionId } from "@/data/dashboard";
 import Eyebrow from "@/components/Eyebrow";
 import { ArrowRightIcon } from "@/components/Icons";
 import { StatusPill } from "./StatusBadge";
+import MobilePhilosopherPill from "@/components/mobile/MobilePhilosopherPill";
 
 interface AlertsViewProps {
   alerts: AlertItem[];
@@ -41,6 +42,10 @@ export default function AlertsView({
   const [addingNote, setAddingNote] = useState(false);
   const [noteTitle, setNoteTitle] = useState("");
   const [noteCategory, setNoteCategory] = useState<AlertItem["category"]>("Deadline");
+  const [readIds, setReadIds] = useState<Record<string, boolean>>({});
+  const [emailDigestEnabled, setEmailDigestEnabled] = useState(true);
+  const [quietHours, setQuietHours] = useState("22:00 – 08:00");
+  const [pushStatus, setPushStatus] = useState("Push: Browser default");
 
   const combinedAlerts = useMemo(
     () => [...customNotes, ...alerts],
@@ -134,6 +139,14 @@ export default function AlertsView({
 
   return (
     <div className="space-y-6">
+      <MobilePhilosopherPill
+        name="Hermes"
+        role="Keeper of Kairos"
+        image="/images/hermes-messenger-alerts.jpg"
+        quote="Receive only the decisive message at the rightful hour."
+        guidance={`Active rule: ${PRESET_DESCRIPTIONS[alertPreset]} Deadlines: ${deadlineCount} · Recruiters: ${recruiterCount}.`}
+      />
+
       {/* SECTION 1: HERMES MESSENGER HERO + GATE CONTROLS */}
       <section className="rounded-[24px] border border-[#dcd2bd] bg-[#faf6ed] p-5 sm:p-6">
         <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
@@ -228,11 +241,59 @@ export default function AlertsView({
                 Active Rule: {PRESET_DESCRIPTIONS[alertPreset]}
                 {quietShield ? " · System pings muted." : ""}
               </p>
+
+              {/* Delivery Channels: Email Digest, Browser Push, Quiet Hours & Mark Read */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11.5px]">
+                <button
+                  type="button"
+                  onClick={() => setEmailDigestEnabled((v) => !v)}
+                  className="cursor-pointer rounded-full border border-[#d6cbb2] bg-white px-3 py-1 text-[#212d3d]"
+                >
+                  {emailDigestEnabled ? "Email Digest: Morning 08:30" : "Email Digest: Off"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined" && "Notification" in window) {
+                      window.Notification.requestPermission()
+                        .then((perm) => setPushStatus(`Push: ${perm}`))
+                        .catch(() => setPushStatus("Push: Unsupported in context"));
+                    } else {
+                      setPushStatus("Push: Unsupported in browser");
+                    }
+                  }}
+                  className="cursor-pointer rounded-full border border-[#d6cbb2] bg-white px-3 py-1 text-[#212d3d]"
+                >
+                  {pushStatus}
+                </button>
+                <select id="alertsview-select-1" name="alertsview-select-1" aria-label="alertsview select 1"
+                  value={quietHours}
+                  onChange={(e) => setQuietHours(e.target.value)}
+                  className="cursor-pointer rounded-full border border-[#d6cbb2] bg-white px-3 py-1 text-[#212d3d]"
+                >
+                  <option value="22:00 – 08:00">Quiet hours: 22:00–08:00</option>
+                  <option value="21:00 – 09:00">Quiet hours: 21:00–09:00</option>
+                  <option value="Off">Quiet hours: Disabled</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const all: Record<string, boolean> = {};
+                    visibleAlerts.forEach((a) => {
+                      all[a.id] = true;
+                    });
+                    setReadIds((p) => ({ ...p, ...all }));
+                  }}
+                  className="cursor-pointer rounded-full border border-[#212d3d]/25 bg-[#faf6ed] px-3 py-1 font-medium text-[#212d3d]"
+                >
+                  Mark visible read
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Right 4: Arched Classical Hermes Portrait Card */}
-          <div className="flex justify-start lg:col-span-4 lg:justify-end">
+          {/* Right 4: Arched Classical Hermes Portrait Card (Desktop Only) */}
+          <div className="hidden justify-start lg:col-span-4 lg:flex lg:justify-end">
             <div className="w-full max-w-[295px] overflow-hidden rounded-t-[145px] rounded-b-[18px] border border-[#cfc2a5] bg-[#e9e0cc] shadow-[0_12px_28px_rgba(33,45,61,0.1)]">
               <div className="aspect-[4/4.2] w-full overflow-hidden">
                 <img
@@ -277,7 +338,7 @@ export default function AlertsView({
             )}
           </div>
 
-          <input
+          <input id="alertsview-input-2" name="alertsview-input-2" aria-label="alertsview input 2"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -292,7 +353,7 @@ export default function AlertsView({
             onSubmit={handleAddDispatch}
             className="flex flex-col gap-2 border-b border-[#ece5d5] bg-[#f4efe3] px-5 py-3.5 sm:flex-row sm:items-center"
           >
-            <select
+            <select id="alertsview-select-3" name="alertsview-select-3" aria-label="alertsview select 3"
               value={noteCategory}
               onChange={(e) =>
                 setNoteCategory(e.target.value as AlertItem["category"])
@@ -303,7 +364,7 @@ export default function AlertsView({
               <option value="Recruiter">Recruiter</option>
               <option value="Follow-up">Follow-up</option>
             </select>
-            <input
+            <input id="alertsview-input-4" name="alertsview-input-4" aria-label="alertsview input 4"
               required
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
@@ -338,13 +399,21 @@ export default function AlertsView({
             <div className="divide-y divide-[#ece5d5]">
               {visibleAlerts.map((al) => {
                 const isSnoozed = Boolean(snoozedIds[al.id]);
+                const isRead = Boolean(readIds[al.id]);
                 return (
                   <div
                     key={al.id}
-                    className="flex flex-col justify-between gap-3 py-4 first:pt-1 last:pb-1 md:flex-row md:items-center"
+                    className={`flex flex-col justify-between gap-3 py-4 first:pt-1 last:pb-1 md:flex-row md:items-center ${
+                      isRead ? "opacity-75" : ""
+                    }`}
                   >
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
+                        <StatusPill
+                          label={isRead ? "Read" : "Unread"}
+                          tone={isRead ? "neutral" : "info"}
+                          dot={!isRead}
+                        />
                         <StatusPill label={al.group} tone="neutral" dot={false} />
                         <StatusPill
                           label={al.category}
@@ -367,7 +436,23 @@ export default function AlertsView({
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => onNavigate(al.targetSection)}
+                        onClick={() =>
+                          setReadIds((prev) => ({
+                            ...prev,
+                            [al.id]: !isRead,
+                          }))
+                        }
+                        className="cursor-pointer rounded-full border border-[#d6cbb2] bg-white px-3 py-1.5 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
+                      >
+                        {isRead ? "Mark unread" : "Mark read"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReadIds((prev) => ({ ...prev, [al.id]: true }));
+                          onNavigate(al.targetSection);
+                        }}
                         className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#212d3d] px-4 py-1.5 text-[12px] font-medium text-[#faf6ed] hover:bg-[#314158]"
                       >
                         <span>{al.actionLabel}</span>

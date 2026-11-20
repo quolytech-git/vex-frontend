@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type {
   CvDiffSuggestion,
   CvQualityFlag,
@@ -8,6 +9,7 @@ import type {
 } from "@/data/dashboard";
 import { CheckIcon } from "@/components/Icons";
 import { GreekTempleWordFrame } from "./IonicColumnDecoration";
+import MobileManuscriptEditor from "@/components/mobile/MobileManuscriptEditor";
 
 interface DocumentsStudioViewProps {
   profile: OnboardingProfileState;
@@ -400,6 +402,46 @@ export default function DocumentsStudioView({
 
   return (
     <div className="space-y-4">
+      {/* Phone: focused note-style manuscript editor (same state & actions). */}
+      <MobileManuscriptEditor
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        variantLabel={VARIANTS.find((v) => v.id === variant)?.label || "Tailored"}
+        showOriginalOnly={variant === "base"}
+        wordCount={wordCount}
+        atsScore={atsScore}
+        candidateName={candidateName}
+        onCandidateName={setCandidateName}
+        candidateMeta={candidateMeta}
+        onCandidateMeta={setCandidateMeta}
+        summaryText={summaryText}
+        onSummaryText={setSummaryText}
+        diffs={diffs}
+        onDecideDiff={onDecideDiff}
+        customBullets={customBullets}
+        onUpdateBullet={updateCustomBullet}
+        onRemoveBullet={removeCustomBullet}
+        onAddBullet={addCustomBullet}
+        skillsText={skillsText}
+        onSkillsText={setSkillsText}
+        coverLetterText={coverLetterText}
+        onCoverLetterText={setCoverLetterText}
+        tone={tone}
+        onTone={applyTonePreset}
+        letterApproved={letterApproved}
+        onLetterApproved={setLetterApproved}
+        flags={flags}
+        onResolveFlag={onResolveFlag}
+        onReset={handleNewDraft}
+        onExport={handleExport}
+        exportMessage={exportMessage}
+        aiMessages={aiMessages}
+        onSendAi={(prompt) => sendAiPrompt(prompt)}
+        onApplyAi={applyAiSuggestion}
+      />
+
+      {/* Desktop: full Word-style scriptorium (unchanged). */}
+      <div className="hidden lg:block">
       <GreekTempleWordFrame inscription="VEX · SCRIPTORIUM">
         {/* ================================================================ */}
         {/* 0. TOP SCULPTURAL PHILOSOPHER DESK SCENE (NO BACKGROUND ROOM)     */}
@@ -413,7 +455,7 @@ export default function DocumentsStudioView({
 
           <div className="relative flex flex-col items-center justify-between gap-4 lg:flex-row lg:items-end">
             {/* Clean Inscription Title Sitting Directly on Limestone Surface */}
-            <div className="pb-4 lg:max-w-[44%] lg:pb-7">
+            <div className="w-full pb-4 lg:w-auto lg:max-w-[44%] lg:pb-7">
               <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6d5938]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-700" />
                 Atelier · Grounded Manuscript Station
@@ -421,14 +463,14 @@ export default function DocumentsStudioView({
               <h2 className="mt-1.5 font-serif-display text-[26px] leading-[1.12] tracking-[-0.015em] text-[#212d3d] sm:text-[31px]">
                 Compose with Clarity &amp; Proof.
               </h2>
-              <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#524634]">
+              <p className="mt-1.5 max-lg:hidden text-[12.5px] leading-relaxed text-[#524634]">
                 Single-column A4 manuscript synced with tracked CV diffs, source
                 evidence, and your docked AI Scribe.
               </p>
             </div>
 
             {/* Background-Free Carved Marble Philosopher + Table + Open Book */}
-            <div className="relative flex w-full justify-center lg:w-[56%] lg:justify-end">
+            <div className="relative hidden w-full justify-center lg:flex lg:w-[56%] lg:justify-end">
               <img
                 src="/images/philosopher-cutout.png?v=2"
                 alt="Limestone philosopher seated at carved table reading open manuscript"
@@ -496,7 +538,7 @@ export default function DocumentsStudioView({
                   />
                 </svg>
                 Upload CV
-                <input
+                <input id="documentsstudioview-input-1" name="documentsstudioview-input-1" aria-label="documentsstudioview input 1"
                   type="file"
                   accept=".pdf,.doc,.docx,.txt"
                   onChange={handleUploadChange}
@@ -517,6 +559,15 @@ export default function DocumentsStudioView({
                 Reset Draft
               </button>
 
+              <Link href="/dashboard/documents/resume/res-main" className={BTN_STONE}>
+                Full CV Editor
+              </Link>
+              <Link href="/dashboard/documents/resume/res-main/preview" className={BTN_STONE}>
+                Print Preview
+              </Link>
+              <Link href="/dashboard/documents/cover-letters" className={BTN_STONE}>
+                Cicero Cover Letters
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -979,7 +1030,7 @@ export default function DocumentsStudioView({
                         template === "classic" ? "text-center" : "text-left"
                       }`}
                     >
-                      <input
+                      <input id="documentsstudioview-input-2" name="documentsstudioview-input-2"
                         ref={headerRef}
                         type="text"
                         aria-label="Candidate Name"
@@ -989,7 +1040,7 @@ export default function DocumentsStudioView({
                           template === "classic" ? "text-center" : "text-left"
                         }`}
                       />
-                      <input
+                      <input id="documentsstudioview-input-3" name="documentsstudioview-input-3"
                         type="text"
                         aria-label="Target Role and Contact Line"
                         value={candidateMeta}
@@ -1018,7 +1069,7 @@ export default function DocumentsStudioView({
                           AI Polish
                         </button>
                       </div>
-                      <textarea
+                      <textarea id="documentsstudioview-textarea-4" name="documentsstudioview-textarea-4"
                         ref={summaryRef}
                         rows={4}
                         aria-label="Executive Profile Summary"
@@ -1072,7 +1123,7 @@ export default function DocumentsStudioView({
                             className="group flex items-start gap-2.5"
                           >
                             <span className="mt-2.5 h-1.5 w-1.5 shrink-0 bg-[#7c6c51]" />
-                            <textarea
+                            <textarea id="documentsstudioview-textarea-5" name="documentsstudioview-textarea-5"
                               rows={2}
                               aria-label={`Experience bullet ${idx + 1}`}
                               value={bullet}
@@ -1114,7 +1165,7 @@ export default function DocumentsStudioView({
                           AI Keywords
                         </button>
                       </div>
-                      <input
+                      <input id="documentsstudioview-input-6" name="documentsstudioview-input-6"
                         ref={skillsRef}
                         type="text"
                         aria-label="Core Skills and Tools"
@@ -1168,7 +1219,7 @@ export default function DocumentsStudioView({
                       {(profile.targetRole || "PRODUCT OPERATIONS LEAD").toUpperCase()}
                     </div>
 
-                    <textarea
+                    <textarea id="documentsstudioview-textarea-7" name="documentsstudioview-textarea-7"
                       rows={21}
                       aria-label="Cover Letter Body"
                       value={coverLetterText}
@@ -1319,7 +1370,7 @@ export default function DocumentsStudioView({
                   >
                     Write Instructions to AI
                   </label>
-                  <textarea
+                  <textarea name="documentsstudioview-textarea-8" aria-label="documentsstudioview textarea 8"
                     id="ai-scribe-composer"
                     ref={aiInputRef}
                     rows={3}
@@ -1477,6 +1528,7 @@ export default function DocumentsStudioView({
           </div>
         </div>
       </GreekTempleWordFrame>
+      </div>
     </div>
   );
 }

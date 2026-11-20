@@ -1505,3 +1505,700 @@ export const MARKET_DEMAND_BENCHMARKS: MarketDemandBenchmark[] = [
     priority: "Long-term",
   },
 ];
+
+/* ============================================================================
+ * PHASE 1-3 EXTENSIONS: STRUCTURED DATA FOR NEW & EXPANDED MODULES
+ * ========================================================================== */
+
+export interface SavedJobSearch {
+  id: string;
+  label: string;
+  query: string;
+  arrangement: "All" | "Remote" | "Hybrid" | "On-site";
+  experience: "All" | "Entry" | "Mid" | "Senior";
+  minSalaryK: number;
+  alertEnabled: boolean;
+  createdAt: string;
+}
+
+export interface ResumeSectionExperience {
+  id: string;
+  company: string;
+  role: string;
+  period: string;
+  bullets: string[];
+}
+
+export interface ResumeSectionEducation {
+  id: string;
+  institution: string;
+  degree: string;
+  year: string;
+}
+
+export interface ResumeDocument {
+  id: string;
+  name: string;
+  targetRole: string;
+  template: "editorial" | "classic" | "executive";
+  sourceFile: string;
+  updatedAt: string;
+  summary: string;
+  personalInfo: {
+    fullName: string;
+    email: string;
+    location: string;
+    headline: string;
+  };
+  experience: ResumeSectionExperience[];
+  education: ResumeSectionEducation[];
+  skills: string[];
+  certifications: string[];
+  projects: { id: string; title: string; detail: string }[];
+}
+
+export interface CoverLetterDraft {
+  id: string;
+  title: string;
+  jobId: string;
+  company: string;
+  tone: "Executive" | "Crisp Analytical" | "Warm Builder";
+  style: "Rhetorical Proof" | "Metric Brief" | "Concise Note";
+  updatedAt: string;
+  version: number;
+  status?: "draft" | "completed" | "archived";
+  recipientName?: string;
+  jobTitle?: string;
+  openingParagraph?: string;
+  mainBody?: string;
+  closingParagraph?: string;
+  signature?: string;
+  previousBody?: string;
+  body: string;
+}
+
+export interface InterviewTranscriptTurn {
+  question: string;
+  answer: string;
+  mode: "Behavioral" | "Technical" | "HR" | "Company-specific";
+  structureScore: number;
+  clarityScore: number;
+  relevanceScore: number;
+  wordCount: number;
+  feedbackNote: string;
+}
+
+export interface InterviewSessionRecord {
+  id: string;
+  applicationId: string;
+  company: string;
+  roleTitle: string;
+  philosopher: string;
+  mode: "Behavioral" | "Technical" | "HR" | "Company-specific";
+  difficulty: "Entry" | "Mid" | "Senior";
+  createdAt: string;
+  overallScore: number;
+  voiceUsed: boolean;
+  turns: InterviewTranscriptTurn[];
+}
+
+export interface CatalogCourseItem {
+  id: string;
+  title: string;
+  category: "SQL & Data" | "Frontend & APIs" | "Product Ops" | "Communication";
+  provider: string;
+  duration: string;
+  level: ProficiencyLevel;
+  skillTag: string;
+  gapMatchedJobs: number;
+  summary: string;
+  modules: string[];
+  enrolled: boolean;
+  progressPct: number;
+  externalUrl: string;
+  certificateNote: string;
+}
+
+export interface SkillAssessmentQuestion {
+  id: string;
+  prompt: string;
+  options: { id: string; text: string }[];
+  correctId: string;
+  explanation: string;
+}
+
+export interface SkillAssessmentItem {
+  id: string;
+  skillId: string;
+  title: string;
+  skillName: string;
+  difficulty: ProficiencyLevel;
+  estimatedMins: number;
+  questions: SkillAssessmentQuestion[];
+  lastScorePct: number | null;
+  passed: boolean;
+  completedAt?: string;
+}
+
+export interface BillingInvoiceItem {
+  id: string;
+  date: string;
+  plan: SubscriptionPlan;
+  amount: string;
+  status: "Local preview (no charge)" | "Paid (demo record)";
+  note: string;
+}
+
+export interface SourcedCareerBenchmark {
+  id: string;
+  roleFamily: string;
+  medianUkSalary: string;
+  p75UkSalary: string;
+  yoyDemand: string;
+  topSkills: string[];
+  sourceName: string;
+  sourceDate: string;
+}
+
+export const INITIAL_SAVED_SEARCHES: SavedJobSearch[] = [
+  {
+    id: "ss-1",
+    label: "London Hybrid Product Ops",
+    query: "Product Operations",
+    arrangement: "Hybrid",
+    experience: "Mid",
+    minSalaryK: 65,
+    alertEnabled: true,
+    createdAt: "12 Nov 2026",
+  },
+  {
+    id: "ss-2",
+    label: "UK Remote Frontend TypeScript",
+    query: "Frontend",
+    arrangement: "Remote",
+    experience: "Mid",
+    minSalaryK: 60,
+    alertEnabled: false,
+    createdAt: "14 Nov 2026",
+  },
+];
+
+export const INITIAL_RESUMES: ResumeDocument[] = [
+  {
+    id: "res-main",
+    name: "Product Ops Master CV (v3)",
+    targetRole: "Product Operations Lead",
+    template: "editorial",
+    sourceFile: "Base_Candidate_CV_2025.pdf",
+    updatedAt: "Today · 09:20",
+    personalInfo: {
+      fullName: "Candidate",
+      email: "candidate@vex.careers",
+      location: "London, UK (Hybrid / Remote)",
+      headline: "Senior Product Analyst · Rollout Governance & Frontend Systems",
+    },
+    summary:
+      "Product operations and frontend delivery specialist experienced in cross-functional release checklists, executive decision memos, and fault-tolerant React/TypeScript workflows.",
+    experience: [
+      {
+        id: "exp-1",
+        company: "ClearLedger Software",
+        role: "Senior Product Analyst",
+        period: "2023 – Present",
+        bullets: [
+          "Coordinated 3 cross-team enterprise launches across product, engineering, and support checklists.",
+          "Owned weekly KPI decision memos and surfaced funnel onboarding regressions cleanly.",
+        ],
+      },
+      {
+        id: "exp-2",
+        company: "Bramley Digital",
+        role: "Operations & Frontend Coordinator",
+        period: "2021 – 2023",
+        bullets: [
+          "Built accessible TypeScript status drawers with preserved draft recovery states.",
+          "Reduced customer ticket handoff latency by documenting clear reproduction playbooks.",
+        ],
+      },
+    ],
+    education: [
+      {
+        id: "edu-1",
+        institution: "University of Leeds",
+        degree: "BSc Information Systems & Management",
+        year: "2021",
+      },
+    ],
+    skills: [
+      "Cross-functional Rollout",
+      "Executive Decision Memos",
+      "React 18+ & TypeScript",
+      "WCAG AA Accessibility",
+      "SQL Cohort Basics",
+    ],
+    certifications: ["Vex Verified Practical Check: HTTP 503 Recovery"],
+    projects: [
+      {
+        id: "prj-1",
+        title: "Vex Intake & Retry Resilience Demo",
+        detail: "Public React/TypeScript reference handling 429/503 transient retries without data loss.",
+      },
+    ],
+  },
+  {
+    id: "res-fe",
+    name: "Frontend Platform Variant (v2)",
+    targetRole: "Frontend Platform Engineer",
+    template: "classic",
+    sourceFile: "Aldermere_Frontend_Tailored.pdf",
+    updatedAt: "2 days ago",
+    personalInfo: {
+      fullName: "Candidate",
+      email: "candidate@vex.careers",
+      location: "UK Remote",
+      headline: "Frontend Platform Engineer · React, TypeScript & WCAG AA",
+    },
+    summary:
+      "Frontend engineer focused on WCAG AA accessible UI primitives, predictable API error states, and reliable client telemetry.",
+    experience: [
+      {
+        id: "exp-fe-1",
+        company: "ClearLedger Software",
+        role: "UI Systems Lead (Product Ops Interface)",
+        period: "2023 – Present",
+        bullets: [
+          "Shipped accessible modal/form primitives and retry recovery handlers across customer portals.",
+        ],
+      },
+    ],
+    education: [
+      {
+        id: "edu-fe-1",
+        institution: "University of Leeds",
+        degree: "BSc Information Systems & Management",
+        year: "2021",
+      },
+    ],
+    skills: ["TypeScript", "React 18", "Next.js", "WCAG AA", "REST API Recovery"],
+    certifications: [],
+    projects: [
+      {
+        id: "prj-fe-1",
+        title: "Accessible Form State Harness",
+        detail: "Zero-dependency focus trap and keyboard navigation test harness.",
+      },
+    ],
+  },
+];
+
+export const INITIAL_COVER_LETTERS: CoverLetterDraft[] = [
+  {
+    id: "cl-northbridge",
+    title: "Northbridge Systems — Product Operations Lead",
+    jobId: "job-northbridge",
+    company: "Northbridge Systems",
+    jobTitle: "Product Operations Lead",
+    recipientName: "Northbridge Hiring Team",
+    tone: "Crisp Analytical",
+    style: "Rhetorical Proof",
+    updatedAt: "Today · 10:15",
+    version: 2,
+    status: "completed",
+    openingParagraph:
+      "When cross-functional product launches stumble, the root cause is rarely effort—it is ambiguous handoffs between engineering, compliance, and customer readiness. Over the last three enterprise launches at ClearLedger Software, I owned the launch readiness checklists and weekly decision memos that kept every stakeholder aligned without extra slide decks.",
+    mainBody:
+      "Northbridge Systems stands out for prioritising written clarity and structured onboarding KPIs. My verified delivery record matches five of six core requirements directly, and I am actively completing SQL cohort funnel drills to bring immediate diagnostic speed to month one.",
+    closingParagraph:
+      "Thank you for your consideration. I look forward to walking through how my launch governance work translates directly to your B2B payments roadmap.",
+    signature: "Sincerely,\nCandidate",
+    previousBody:
+      "I am writing to apply for the Product Operations Lead position at Northbridge Systems. With strong experience in cross-team launch operations and stakeholder coordination, I believe I would add immediate value.",
+    body: `Dear Northbridge Hiring Team,
+
+When cross-functional product launches stumble, the root cause is rarely effort—it is ambiguous handoffs between engineering, compliance, and customer readiness. Over the last three enterprise launches at ClearLedger Software, I owned the launch readiness checklists and weekly decision memos that kept every stakeholder aligned without extra slide decks.
+
+Northbridge Systems stands out for prioritising written clarity and structured onboarding KPIs. My verified delivery record matches five of six core requirements directly, and I am actively completing SQL cohort funnel drills to bring immediate diagnostic speed to month one.
+
+Thank you for your consideration. I look forward to walking through how my launch governance work translates directly to your B2B payments roadmap.`,
+  },
+  {
+    id: "cl-aldermere",
+    title: "Aldermere Financial — Frontend Platform Engineer",
+    jobId: "job-aldermere",
+    company: "Aldermere Financial",
+    jobTitle: "Frontend Platform Engineer",
+    recipientName: "Aldermere Engineering Team",
+    tone: "Warm Builder",
+    style: "Metric Brief",
+    updatedAt: "6 days ago",
+    version: 1,
+    status: "draft",
+    openingParagraph:
+      "Financial UI fails candidates and customers when transient API errors wipe form progress or break keyboard focus. In my recent TypeScript/React work, I built local draft preservation and WCAG AA accessible recovery patterns that turn network faults into calm, recoverable states.",
+    mainBody:
+      "At ClearLedger Software and Bramley Digital, I delivered semantic form harnesses and documented UI component contracts alongside REST retry playbooks—matching your clearing team's focus on deterministic client resilience.",
+    closingParagraph:
+      "I would welcome the opportunity to contribute that same reliability to Aldermere's clearing platform.",
+    signature: "Best regards,\nCandidate",
+    previousBody:
+      "I am applying for Frontend Platform Engineer at Aldermere Financial because I work with React and TypeScript and care about accessibility.",
+    body: `Dear Aldermere Engineering Team,
+
+Financial UI fails candidates and customers when transient API errors wipe form progress or break keyboard focus. In my recent TypeScript/React work, I built local draft preservation and WCAG AA accessible recovery patterns that turn network faults into calm, recoverable states.
+
+I would welcome the opportunity to contribute that same reliability to Aldermere's clearing platform.`,
+  },
+];
+
+export const INITIAL_INTERVIEW_SESSIONS: InterviewSessionRecord[] = [
+  {
+    id: "sess-meridian-1",
+    applicationId: "app-3",
+    company: "Meridian Advisory",
+    roleTitle: "Strategy & Readiness Associate",
+    philosopher: "Socrates",
+    mode: "Behavioral",
+    difficulty: "Mid",
+    createdAt: "Yesterday · 17:10",
+    overallScore: 84,
+    voiceUsed: false,
+    turns: [
+      {
+        question:
+          "Walk me through a launch or cross-team rollout where something broke mid-flight. What did you personally coordinate and change?",
+        answer:
+          "During an enterprise rollout at ClearLedger, webhook confirmation events timed out under peak load. I halted downstream email triggers, coordinated staging replay verification with two engineers, and added a pre-launch retry checklist.",
+        mode: "Behavioral",
+        structureScore: 88,
+        clarityScore: 85,
+        relevanceScore: 80,
+        wordCount: 38,
+        feedbackNote:
+          "Clear ownership opening and concrete remediation step; add one specific quantified outcome metric to reach 90+.",
+      },
+    ],
+  },
+];
+
+export const INITIAL_COURSE_CATALOG: CatalogCourseItem[] = [
+  {
+    id: "cat-1",
+    title: "SQL Funnel & Cohort Queries in 90 Minutes",
+    category: "SQL & Data",
+    provider: "Mode Analytics + Vex Practice Lab",
+    duration: "1h 30m",
+    level: "Intermediate",
+    skillTag: "SQL Cohort Funnel",
+    gapMatchedJobs: 3,
+    summary:
+      "Master DATE_TRUNC cohort CTEs, LEFT JOIN conversion funnels, and retention tables without over-filtering non-converters.",
+    modules: [
+      "Signup Schema Audit",
+      "Weekly Cohort CTEs",
+      "Conversion Drop-Off Joins",
+      "Null & Timezone Edge Cases",
+    ],
+    enrolled: true,
+    progressPct: 65,
+    externalUrl: "https://mode.com/sql-tutorial/",
+    certificateNote: "Self-paced completion badge (internal learning tracker)",
+  },
+  {
+    id: "cat-2",
+    title: "API Error States & Bounded Retry Patterns",
+    category: "Frontend & APIs",
+    provider: "Vex Systems Atelier",
+    duration: "35m",
+    level: "Intermediate",
+    skillTag: "API Integration & Error Recovery",
+    gapMatchedJobs: 2,
+    summary:
+      "Handle HTTP 429/503 failures safely in TypeScript UI flows using local draft caching, bounded jittered retry, and honest fallback routes.",
+    modules: [
+      "Transient vs Permanent Faults",
+      "Preserving Candidate Input",
+      "Single Bounded Backoff",
+      "Fallback UX Without Mocking",
+    ],
+    enrolled: true,
+    progressPct: 40,
+    externalUrl: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+    certificateNote: "Unlocks Vex Practical Check badge upon quiz pass",
+  },
+  {
+    id: "cat-3",
+    title: "Written Decision Memos & Rollout Readiness",
+    category: "Product Ops",
+    provider: "Vex Agora Operations",
+    duration: "50m",
+    level: "Advanced",
+    skillTag: "Executive Decision Memos",
+    gapMatchedJobs: 2,
+    summary:
+      "Structure 1-page launch memos with risk registers, reversible owners, and post-launch instrumentation checks.",
+    modules: [
+      "1-Sentence Thesis Framing",
+      "Trade-Off Matrices",
+      "Rollback Sign-Off Checklist",
+    ],
+    enrolled: false,
+    progressPct: 0,
+    externalUrl: "https://stripe.com/guides",
+    certificateNote: "Internal Ops milestone",
+  },
+  {
+    id: "cat-4",
+    title: "WCAG AA Keyboard & Focus Management",
+    category: "Frontend & APIs",
+    provider: "WebAIM + Vex UI Standards",
+    duration: "1h 10m",
+    level: "Intermediate",
+    skillTag: "WCAG AA Accessibility",
+    gapMatchedJobs: 1,
+    summary:
+      "Build ARIA-compliant modal dialogs, focus restoration, and high-contrast interactive controls.",
+    modules: [
+      "Semantic Landmarks",
+      "Keyboard Escape & Tab Traps",
+      "Contrast & Screen-Reader Checks",
+    ],
+    enrolled: false,
+    progressPct: 0,
+    externalUrl: "https://webaim.org/intro/",
+    certificateNote: "External study resource",
+  },
+];
+
+export const INITIAL_ASSESSMENTS: SkillAssessmentItem[] = [
+  {
+    id: "asm-api",
+    skillId: "sk-3",
+    title: "API Error States & Honest Fallback Assessment",
+    skillName: "API Integration & Error Recovery",
+    difficulty: "Intermediate",
+    estimatedMins: 8,
+    lastScorePct: null,
+    passed: false,
+    questions: [
+      {
+        id: "q-api-1",
+        prompt:
+          "When an upstream job-board feed returns HTTP 503 during search, what is Vex's strict engineering rule?",
+        options: [
+          { id: "a", text: "Preserve saved items, retry once with backoff, and show an honest unavailable notice." },
+          { id: "b", text: "Populate synthetic placeholder jobs silently so the list looks busy." },
+          { id: "c", text: "Clear local application state and log the user out." },
+        ],
+        correctId: "a",
+        explanation:
+          "Graceful degradation preserves user work and never fabricates listings or claims healthy sync.",
+      },
+      {
+        id: "q-api-2",
+        prompt: "Which HTTP status code specifically indicates rate limiting requiring backoff?",
+        options: [
+          { id: "a", text: "HTTP 404 Not Found" },
+          { id: "b", text: "HTTP 429 Too Many Requests" },
+          { id: "c", text: "HTTP 204 No Content" },
+        ],
+        correctId: "b",
+        explanation: "HTTP 429 signals rate throttling and should respect Retry-After headers.",
+      },
+    ],
+  },
+  {
+    id: "asm-sql",
+    skillId: "sk-2",
+    title: "SQL Cohort & Funnel Retention Check",
+    skillName: "SQL & Cohort Diagnostics",
+    difficulty: "Intermediate",
+    estimatedMins: 10,
+    lastScorePct: null,
+    passed: false,
+    questions: [
+      {
+        id: "q-sql-1",
+        prompt:
+          "Why use LEFT JOIN instead of INNER JOIN when measuring Day-7 signup activation rates?",
+        options: [
+          { id: "a", text: "INNER JOIN drops non-activated users and artificially inflates conversion." },
+          { id: "b", text: "LEFT JOIN always runs faster on unindexed columns." },
+          { id: "c", text: "SQL prohibits WHERE filters with INNER JOIN." },
+        ],
+        correctId: "a",
+        explanation:
+          "Retaining every signed-up cohort user in the denominator is required for truthful funnel rates.",
+      },
+      {
+        id: "q-sql-2",
+        prompt: "Which SQL function buckets timestamps cleanly into Monday-start weekly waves?",
+        options: [
+          { id: "a", text: "STRING_AGG(created_at)" },
+          { id: "b", text: "DATE_TRUNC('week', created_at)" },
+          { id: "c", text: "COALESCE(created_at, 0)" },
+        ],
+        correctId: "b",
+        explanation: "DATE_TRUNC('week', ts) aligns every event to the start of its calendar week.",
+      },
+    ],
+  },
+];
+
+export const INITIAL_BILLING_INVOICES: BillingInvoiceItem[] = [
+  {
+    id: "INV-2026-011",
+    date: "01 Nov 2026",
+    plan: "Pro",
+    amount: "£19.00",
+    status: "Local preview (no charge)",
+    note: "Simulated frontend invoice preview — live billing requires Stripe backend checkout.",
+  },
+];
+
+export const SOURCED_CAREER_BENCHMARKS: SourcedCareerBenchmark[] = [
+  {
+    id: "bm-1",
+    roleFamily: "Product Operations Lead (UK B2B SaaS)",
+    medianUkSalary: "£72,000",
+    p75UkSalary: "£86,000",
+    yoyDemand: "+18% YoY postings",
+    topSkills: ["SQL Funnel Diagnostics", "Launch Governance", "Decision Memos"],
+    sourceName: "UK Tech & Product Ops Compensation Index (Public Sample)",
+    sourceDate: "Q4 2026",
+  },
+  {
+    id: "bm-2",
+    roleFamily: "Frontend Platform Engineer (React / TypeScript)",
+    medianUkSalary: "£68,000",
+    p75UkSalary: "£82,000",
+    yoyDemand: "+14% YoY postings",
+    topSkills: ["TypeScript", "WCAG AA Accessibility", "API Error Resilience"],
+    sourceName: "OttA & Public UK Engineering Benchmarks (curated dataset)",
+    sourceDate: "Q4 2026",
+  },
+  {
+    id: "bm-3",
+    roleFamily: "Strategy & Readiness Associate",
+    medianUkSalary: "£58,000",
+    p75UkSalary: "£70,000",
+    yoyDemand: "+11% YoY postings",
+    topSkills: ["Executive Briefs", "Cohort Modeling", "Cross-team Coordination"],
+    sourceName: "London Advisory Role Range Audit",
+    sourceDate: "Nov 2026",
+  },
+];
+
+/* ==========================================================================
+ * DEDICATED MCP TOOL EXPLORER & VEX APPLY CHROME EXTENSION SETTINGS
+ * ========================================================================== */
+
+export interface McpToolDefinition {
+  id: string;
+  toolName: string;
+  integrationId: string;
+  integrationName: string;
+  category:
+    | "Career Platforms"
+    | "Email & Communication"
+    | "Documents & Storage"
+    | "Productivity"
+    | "AI Tools"
+    | "Developer Tools";
+  permissionLevel: "Read Only" | "Confirm-First Proposal" | "Per-Request Secret Lock";
+  description: string;
+  capabilities: string[];
+  recentUsage: string;
+}
+
+export const INITIAL_MCP_TOOLS: McpToolDefinition[] = [
+  {
+    id: "tool-job-search",
+    toolName: "search_verified_jobs",
+    integrationId: "mcp-jobs",
+    integrationName: "Greenhouse & Public Career Feed",
+    category: "Career Platforms",
+    permissionLevel: "Read Only",
+    description:
+      "Queries active public job boards and deduplicates roles across sources using baseline preferences.",
+    capabilities: ["Deduplicate listings", "Compute fit scores", "Flag expiration deadlines"],
+    recentUsage: "Today · 10:42",
+  },
+  {
+    id: "tool-recruiter-classify",
+    toolName: "classify_recruiter_threads",
+    integrationId: "mcp-inbox",
+    integrationName: "Gmail Recruiter Filter (Read-Only)",
+    category: "Email & Communication",
+    permissionLevel: "Read Only",
+    description:
+      "Inspects whitelisted ATS & recruiter domains to classify interview invites without mutating inbox messages.",
+    capabilities: ["Extract interview timestamps", "Link threads to Tracker", "Draft candidate reply"],
+    recentUsage: "Today · 09:58",
+  },
+  {
+    id: "tool-cv-inspect",
+    toolName: "inspect_cv_audit_diffs",
+    integrationId: "mcp-docs",
+    integrationName: "Google Drive — Selected Portfolio Folder",
+    category: "Documents & Storage",
+    permissionLevel: "Confirm-First Proposal",
+    description:
+      "Reads user-selected CV baselines and generates line-by-line truth-checked edit suggestions.",
+    capabilities: ["Surface ungrounded claims", "Compare JD keywords", "Check ATS structure"],
+    recentUsage: "3 days ago",
+  },
+  {
+    id: "tool-calendar-slots",
+    toolName: "check_interview_windows",
+    integrationId: "mcp-cal",
+    integrationName: "Calendar Free/Busy Reader",
+    category: "Productivity",
+    permissionLevel: "Read Only",
+    description:
+      "Reads free/busy windows to prevent double-booking prep or screening calls (offline when token expires).",
+    capabilities: ["Read busy blocks", "Suggest prep buffers"],
+    recentUsage: "Paused · Sign-in expired",
+  },
+  {
+    id: "tool-extension-prefill",
+    toolName: "prepare_ats_packet",
+    integrationId: "ext-fullcv",
+    integrationName: "Vex Apply Desktop Extension Bridge",
+    category: "AI Tools",
+    permissionLevel: "Per-Request Secret Lock",
+    description:
+      "Maps confirmed profile fields onto Greenhouse/Lever forms and enforces a hard human-confirmation pause before submit.",
+    capabilities: ["Hydrate verified profile fields", "Highlight screening questions", "Block auto-submit"],
+    recentUsage: "Today · 10:51",
+  },
+  {
+    id: "tool-github-proof",
+    toolName: "read_verified_repo_evidence",
+    integrationId: "mcp-docs",
+    integrationName: "Repository & Artifact Verifier",
+    category: "Developer Tools",
+    permissionLevel: "Read Only",
+    description:
+      "Links public code case studies and practical assessment runs into Profile & Portfolio proof cards.",
+    capabilities: ["Verify live project summaries", "Attach README highlights"],
+    recentUsage: "5 days ago",
+  },
+];
+
+export interface VexApplyExtensionSettings {
+  extensionPaired: boolean;
+  confirmBeforeSubmit: boolean;
+  pauseOnScreeningQuestions: boolean;
+  highlightMissingProfileFields: boolean;
+  strictVerifiedSkillsOnly: boolean;
+  desktopReminderToast: boolean;
+}
+
+export const DEFAULT_APPLY_SETTINGS: VexApplyExtensionSettings = {
+  extensionPaired: false,
+  confirmBeforeSubmit: true,
+  pauseOnScreeningQuestions: true,
+  highlightMissingProfileFields: true,
+  strictVerifiedSkillsOnly: true,
+  desktopReminderToast: true,
+};
