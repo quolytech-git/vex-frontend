@@ -22,7 +22,8 @@ import SettingsPrivacyView from "./SettingsPrivacyView";
 import PhilosopherCoachGuide from "./PhilosopherCoachGuide";
 import { IonicTemplePortico } from "./IonicColumnDecoration";
 import MobileHeader from "@/components/mobile/MobileHeader";
-import MobileTabBar, { type PrimaryMobileTab } from "@/components/mobile/MobileTabBar";
+import { GOTO_SECTION_EVENT, announceSection } from "@/components/mobile/PersistentTabBar";
+import { useCloudTransition } from "@/components/PageTransition";
 
 type PillarLabel =
   | "COMMAND"
@@ -167,9 +168,24 @@ export default function DashboardShell() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
+  // The persistent tab bar (in the dashboard layout) follows and drives the section.
+  useEffect(() => {
+    announceSection(section);
+  }, [section]);
+  useEffect(() => {
+    const onGoto = (e: Event) => navigateTo((e as CustomEvent<DashboardSectionId>).detail);
+    window.addEventListener(GOTO_SECTION_EVENT, onGoto);
+    return () => window.removeEventListener(GOTO_SECTION_EVENT, onGoto);
+  });
+
+  const cloud = useCloudTransition();
   function navigateTo(nextSection: DashboardSectionId) {
-    setSection(nextSection);
-    window.scrollTo({ top: 0, behavior: isPhone ? "auto" : "smooth" });
+    if (nextSection === section) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // Clouds roll in, the section swaps behind them, then they part.
+    cloud.run(() => setSection(nextSection));
   }
 
   function handleToggleSaveJob(jobId: string) {
@@ -206,14 +222,6 @@ export default function DashboardShell() {
     settings: "11",
   };
 
-  const primaryTab: PrimaryMobileTab | "other" =
-    section === "overview" ||
-    section === "jobs" ||
-    section === "applications" ||
-    section === "learning" ||
-    section === "profile"
-      ? section
-      : "other";
 
   const activeItem = NAV_ITEMS.find((n) => n.id === section) || NAV_ITEMS[0];
 
@@ -466,12 +474,12 @@ export default function DashboardShell() {
 
         {/* Active Section Stage */}
         <main className="min-w-0 flex-1 pb-8">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode={isPhone ? "popLayout" : "wait"}>
             <motion.div
               key={section}
               initial={isPhone ? { opacity: 0, x: 14 } : { opacity: 0, y: 10 }}
               animate={isPhone ? { opacity: 1, x: 0 } : { opacity: 1, y: 0 }}
-              exit={isPhone ? { opacity: 0, x: -10 } : { opacity: 0, y: -6 }}
+              exit={isPhone ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -6 }}
               transition={{ duration: isPhone ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
               {section === "overview" && (
@@ -676,13 +684,6 @@ export default function DashboardShell() {
           </main>
       </div>
 
-      {/* APPLE HIG 5-TAB BOTTOM NAVIGATION (Mobile Companion Only) */}
-      <MobileTabBar
-        activeTab={primaryTab}
-        onSelectSection={navigateTo}
-        jobsCount={jobs.filter((j) => !hiddenJobIds.includes(j.id)).length}
-        appsCount={applications.length}
-      />
 
       {/* GLOBAL FIFA-MOBILE INTERACTIVE PHILOSOPHER GUIDE ACROSS EVERY PAGE */}
       <PhilosopherCoachGuide

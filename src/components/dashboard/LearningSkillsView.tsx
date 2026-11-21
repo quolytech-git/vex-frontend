@@ -522,7 +522,7 @@ export default function LearningSkillsView({
         </div>
 
         {/* 2. NUMBERED STEP NAVIGATION (Clear left-to-right guide) */}
-        <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#e5dac2] pt-4 sm:grid-cols-5">
+        <div className="no-scrollbar mt-5 flex snap-x gap-2 overflow-x-auto border-t border-[#e5dac2] pt-4 lg:grid lg:grid-cols-5 lg:overflow-visible">
           {STEP_ITEMS.map((item) => {
             const active = step === item.id;
             return (
@@ -530,7 +530,7 @@ export default function LearningSkillsView({
                 key={item.id}
                 type="button"
                 onClick={() => setStep(item.id)}
-                className={`flex cursor-pointer flex-col rounded-[14px] border px-3.5 py-2.5 text-left transition-all ${
+                className={`flex shrink-0 snap-start cursor-pointer flex-col rounded-[14px] max-lg:min-w-[140px] border px-3.5 py-2.5 text-left transition-all ${
                   active
                     ? "border-[#212d3d] bg-[#212d3d] text-[#faf6ed] shadow-sm"
                     : "border-[#dfd4be] bg-white text-[#212d3d] hover:border-[#8f7d5d]"

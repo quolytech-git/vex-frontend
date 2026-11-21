@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { InstallAppProvider } from "@/components/InstallApp";
 import SplashScreen, { SPLASH_HEAD_SCRIPT } from "@/components/SplashScreen";
+import { PageTransitionProvider } from "@/components/PageTransition";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -49,11 +50,13 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#faf6ed] text-[#212d3d] antialiased selection:bg-[#212d3d] selection:text-[#faf6ed]">
         <InstallAppProvider>
           <SplashScreen />
-          <SmoothScroll>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-          </SmoothScroll>
+          <PageTransitionProvider>
+            <SmoothScroll>
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+            </SmoothScroll>
+          </PageTransitionProvider>
         </InstallAppProvider>
       </body>
     </html>

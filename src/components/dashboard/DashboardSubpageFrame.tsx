@@ -7,7 +7,6 @@ import { useVexWorkspace } from "@/lib/vex-store";
 import { VexLogoMark } from "@/components/Icons";
 import PhilosopherCoachGuide from "./PhilosopherCoachGuide";
 import MobileHeader from "@/components/mobile/MobileHeader";
-import MobileTabBar, { type PrimaryMobileTab } from "@/components/mobile/MobileTabBar";
 
 interface DashboardSubpageFrameProps {
   parentSection: DashboardSectionId;
@@ -29,14 +28,6 @@ export default function DashboardSubpageFrame({
   const { profile, plan, alerts, jobs, applications, hiddenJobIds, coachOpen, setCoachOpen } =
     useVexWorkspace();
   const unreadCount = alerts.filter((a) => !a.dismissed).length;
-  const mobileTab: PrimaryMobileTab | "other" =
-    parentSection === "overview" ||
-    parentSection === "jobs" ||
-    parentSection === "applications" ||
-    parentSection === "learning" ||
-    parentSection === "profile"
-      ? parentSection
-      : "other";
 
   return (
     <div className="vex-app relative min-h-screen w-full bg-[#f6f1e6] text-[#212d3d] pb-28 lg:bg-[#6d828f] lg:pb-16">
@@ -163,12 +154,6 @@ export default function DashboardSubpageFrame({
         {children}
       </main>
 
-      {/* PERSISTENT APPLE HIG 5-TAB BOTTOM BAR ON SUBPAGES (< lg) */}
-      <MobileTabBar
-        activeTab={mobileTab}
-        jobsCount={jobs.filter((j) => !hiddenJobIds.includes(j.id)).length}
-        appsCount={applications.length}
-      />
 
       {/* SHARED PHILOSOPHER COACH GUIDE ACROSS NESTED PAGES */}
       <PhilosopherCoachGuide

@@ -413,3 +413,14 @@ html[data-splash="off"] #vex-splash {
     --vex-splash-mask: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
   }
 }
+
+/* No grey tap flash on iOS for any control (tab bar lives outside .vex-app). */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Keep frosted bars on their own GPU layer so they don't flicker while scrolling. */
+.vex-glass,
+.vex-glass-bar {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
