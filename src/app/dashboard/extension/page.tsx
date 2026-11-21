@@ -6,6 +6,7 @@ import { useVexWorkspace } from "@/lib/vex-store";
 import DashboardSubpageFrame from "@/components/dashboard/DashboardSubpageFrame";
 import { InstallAppButton, useInstallApp } from "@/components/InstallApp";
 import { InfoIcon } from "@/components/web/InfoPage";
+import { ExtensionDisclosure, ExtensionPopupPreview, ExtensionSitePermissions } from "@/components/dashboard/kit/SubpagePanels";
 
 /** Dashboard hub for the Chrome extension + the installable app, on phone and PC. */
 export default function DashboardExtensionPage() {
@@ -147,6 +148,12 @@ export default function DashboardExtensionPage() {
             </ul>
           )}
         </section>
+
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <ExtensionSitePermissions />
+          <ExtensionDisclosure />
+        </div>
+        <ExtensionPopupPreview />
 
         {/* App install */}
         <section className="flex flex-col gap-4 rounded-[24px] border border-[#e3dccb] bg-[#f2eee2] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">

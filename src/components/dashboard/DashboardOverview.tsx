@@ -1,5 +1,6 @@
 "use client";
 
+import { ScoreInfo } from "./kit/Kit";
 import React, { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -207,7 +208,7 @@ export default function DashboardOverview({
               </div>
 
               <div>
-                <p className="text-[11.5px] text-[#faf6ed]/70">Readiness Score</p>
+                <p className="flex items-center text-[11.5px] text-[#faf6ed]/70">Readiness Score<ScoreInfo dark label="Readiness score" means="How many of the 7 first-day readiness checks you have completed." notMeans="Your chance of getting an interview or a job." /></p>
                 <p className="mt-0.5 font-serif-display text-[44px] leading-none tracking-[-0.02em] text-white">
                   {careerMomentumScore}%
                 </p>
@@ -386,7 +387,7 @@ export default function DashboardOverview({
               className="flex cursor-pointer flex-col justify-between rounded-[24px] bg-[#e3cea0] p-4 text-left text-[#1a2430]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11.5px] font-medium">Match Lift</span>
+                <span className="flex items-center text-[11.5px] font-medium">Match Lift<ScoreInfo label="Match lift" means="How much your average match % rose after accepting honest CV edits for your shortlisted jobs." notMeans="A higher chance of being invited." /></span>
                 <span className="font-mono text-[10px]">•••</span>
               </div>
               <p className="mt-2 font-serif-display text-[32px] leading-none">

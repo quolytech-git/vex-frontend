@@ -9,6 +9,7 @@ import Eyebrow from "@/components/Eyebrow";
 import DashboardSubpageFrame from "@/components/dashboard/DashboardSubpageFrame";
 import { StatusPill } from "@/components/dashboard/StatusBadge";
 import MobileNoteEditor, { type NoteBlock } from "@/components/mobile/MobileNoteEditor";
+import { ParsedCvConfirm, type ParsedField } from "@/components/dashboard/kit/SubpagePanels";
 
 export default function ResumeEditorPage() {
   const params = useParams<{ resumeId: string }>();
@@ -22,6 +23,7 @@ export default function ResumeEditorPage() {
   const [parseNotice, setParseNotice] = useState("");
   const [savedMsg, setSavedMsg] = useState("");
   const [showTools, setShowTools] = useState(false);
+  const [parsed, setParsed] = useState<{ file: string; fields: ParsedField[] } | null>(null);
   const [newSkill, setNewSkill] = useState("");
   const [compareId, setCompareId] = useState(
     resumes.find((r) => r.id !== currentDoc.id)?.id || ""
@@ -129,6 +131,16 @@ export default function ResumeEditorPage() {
         setParseNotice(
           `Extracted ${lines.length} readable lines from "${file.name}" into your draft.`
         );
+        const email = lines.find((l) => /@/.test(l)) || "";
+        setParsed({
+          file: file.name,
+          fields: [
+            { key: "fullName", label: "Full name", value: lines[0] || "", sourceLine: lines[0] || "" },
+            { key: "headline", label: "Headline", value: lines[1] || "", sourceLine: lines[1] || "" },
+            { key: "email", label: "Email", value: (email.match(/\S+@\S+/) || [""])[0], sourceLine: email },
+            { key: "summary", label: "Summary", value: lines.slice(2, 4).join(" "), sourceLine: lines.slice(2, 4).join(" ") },
+          ],
+        });
       };
       reader.readAsText(file);
     } else {
@@ -137,6 +149,14 @@ export default function ResumeEditorPage() {
         sourceFile: file.name,
         updatedAt: "Attached · Ready for manual field check",
       }));
+      setParsed({
+        file: file.name,
+        fields: [
+          { key: "fullName", label: "Full name", value: draft.personalInfo.fullName, sourceLine: "(read by the server parser once connected)" },
+          { key: "headline", label: "Headline", value: draft.personalInfo.headline, sourceLine: "(read by the server parser once connected)" },
+          { key: "email", label: "Email", value: draft.personalInfo.email, sourceLine: "(read by the server parser once connected)" },
+        ],
+      });
       setParseNotice(
         `Attached "${file.name}" (${Math.max(1, Math.round(file.size / 1024))} KB). Binary PDF/DOCX server extraction requires backend parser — review or edit structured sections below without inventing facts.`
       );
@@ -197,6 +217,24 @@ export default function ResumeEditorPage() {
       pageTitle="Complete Resume Studio"
       philosopherTag="Leonardo · Precision Craft"
     >
+      <ParsedCvConfirm
+        open={Boolean(parsed)}
+        onClose={() => setParsed(null)}
+        fileName={parsed?.file || ""}
+        fields={parsed?.fields || []}
+        onConfirm={(v) =>
+          setDraft((d) => ({
+            ...d,
+            summary: v.summary ?? d.summary,
+            personalInfo: {
+              ...d.personalInfo,
+              fullName: v.fullName ?? d.personalInfo.fullName,
+              headline: v.headline ?? d.personalInfo.headline,
+              email: v.email ?? d.personalInfo.email,
+            },
+          }))
+        }
+      />
       <MobileNoteEditor
         eyebrow={`${draft.updatedAt} · ${draft.targetRole || "CV"}`}
         title={draft.name}

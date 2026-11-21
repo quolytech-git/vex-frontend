@@ -272,7 +272,7 @@ export default function AuthExperience({
                           {mode === "login" ? (
                             <button
                               type="button"
-                              onClick={() => switchMode("forgot")}
+                              onClick={() => { window.location.href = "/forgot-password"; }}
                               className="shrink-0 cursor-pointer rounded-full bg-[#faf6ed] px-3 py-1 text-[11.5px] font-medium text-[#5a6675] shadow-2xs transition-colors hover:text-[#212d3d]"
                             >
                               I forgot

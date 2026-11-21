@@ -281,7 +281,7 @@ body {
 
   /* Flatten the outer desktop frame so cards sit directly on the app background
      instead of a card nested inside a card. */
-  .vex-app main > div > div > section:first-of-type,
+  .vex-app main > div > div > section:first-of-type:not(.vex-kit),
   .vex-app main .vex-m-flat {
     border-width: 0 !important;
     background: transparent !important;

@@ -6,6 +6,7 @@ import type { DashboardSectionId } from "@/data/dashboard";
 import { useVexWorkspace } from "@/lib/vex-store";
 import { VexLogoMark } from "@/components/Icons";
 import PhilosopherCoachGuide from "./PhilosopherCoachGuide";
+import { SampleDataBanner } from "./kit/Kit";
 import MobileHeader from "@/components/mobile/MobileHeader";
 
 interface DashboardSubpageFrameProps {
@@ -151,6 +152,7 @@ export default function DashboardSubpageFrame({
 
       {/* SUBPAGE STAGE */}
       <main className="relative z-10 mx-auto max-w-[1380px] px-4 pt-6 sm:px-6 lg:px-8">
+        <SampleDataBanner />
         {children}
       </main>
 

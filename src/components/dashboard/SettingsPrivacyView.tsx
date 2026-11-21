@@ -225,7 +225,7 @@ export default function SettingsPrivacyView({
               </div>
               <button
                 type="button"
-                onClick={() => setEmailVerified((v) => !v)}
+                onClick={() => { if (!emailVerified) window.location.href = "/verify-email"; }}
                 className="cursor-pointer rounded-full bg-[#067647]/10 px-3 py-1 text-[11.5px] font-medium text-[#067647]"
               >
                 {emailVerified ? "Verified [OK]" : "Verify email"}
@@ -236,12 +236,12 @@ export default function SettingsPrivacyView({
               <div>
                 <p className="font-medium text-[#212d3d]">Password Reset</p>
                 <p className="text-[11.5px] text-[#5a6675]">
-                  Local frontend preview — triggers instant confirmation notice
+                  We email you a link that expires in 30 minutes
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setPasswordResetSent(true)}
+                onClick={() => { setPasswordResetSent(true); window.location.href = "/forgot-password"; }}
                 className="cursor-pointer rounded-full border border-[#dad6ca] bg-white px-3.5 py-1 text-[11.5px] font-medium text-[#212d3d] hover:border-[#212d3d]"
               >
                 {passwordResetSent ? "Reset link ready" : "Send reset link"}

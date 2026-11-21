@@ -74,6 +74,7 @@ export default function MobileHeader({
         { label: "Notifications & Alerts", sub: `${unreadAlerts} active updates`, section: "alerts" },
         { label: "Settings & Privacy", sub: "Themis data ownership", section: "settings" },
         { label: "Billing & AI Quotas", sub: "Plutus tier preview", href: "/dashboard/settings/billing" },
+        { label: "Help & Support", sub: "Answers, tour, contact", href: "/dashboard/help" },
       ],
     },
   ];

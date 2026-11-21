@@ -24,6 +24,9 @@ import { IonicTemplePortico } from "./IonicColumnDecoration";
 import MobileHeader from "@/components/mobile/MobileHeader";
 import { GOTO_SECTION_EVENT, announceSection } from "@/components/mobile/PersistentTabBar";
 import { useCloudTransition } from "@/components/PageTransition";
+import { SampleDataBanner, SyncIndicator } from "./kit/Kit";
+import { SectionTopPanels, SectionBottomPanels } from "./kit/SectionPanels";
+import { logEvent } from "@/lib/analytics";
 
 type PillarLabel =
   | "COMMAND"
@@ -185,6 +188,7 @@ export default function DashboardShell() {
       return;
     }
     // Clouds roll in, the section swaps behind them, then they part.
+    logEvent("section_viewed", nextSection);
     cloud.run(() => setSection(nextSection));
   }
 
@@ -467,6 +471,18 @@ export default function DashboardShell() {
                     <span className="truncate leading-[1.35]">RE-RUN INTAKE</span>
                   )}
                 </Link>
+                <Link
+                  href="/dashboard/help"
+                  title="Help & support"
+                  className={`mt-1 flex items-center gap-2.5 rounded-[10px] px-2 py-1.5 font-mono text-[9.5px] font-medium text-[#6d624d] transition-colors hover:bg-[#faf6ed] hover:text-[#212d3d] ${
+                    navExpanded ? "" : "justify-center px-0"
+                  }`}
+                >
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#cfc5aa] bg-[#efe8d5] text-[11px] font-semibold">
+                    ?
+                  </span>
+                  {navExpanded && <span className="truncate leading-[1.35]">HELP & SUPPORT</span>}
+                </Link>
               </div>
             </IonicTemplePortico>
           </div>
@@ -482,6 +498,11 @@ export default function DashboardShell() {
               exit={isPhone ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -6 }}
               transition={{ duration: isPhone ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
+              <SampleDataBanner />
+              <div className="mb-3 flex justify-end max-lg:hidden">
+                <SyncIndicator />
+              </div>
+              <SectionTopPanels section={section} onNavigate={navigateTo} />
               {section === "overview" && (
                 <DashboardOverview
                     profile={profile}
@@ -679,6 +700,7 @@ export default function DashboardShell() {
                     onResetWorkspaceData={resetWorkspaceData}
                   />
                 )}
+              <SectionBottomPanels section={section} />
               </motion.div>
             </AnimatePresence>
           </main>
