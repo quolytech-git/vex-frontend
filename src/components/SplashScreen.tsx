@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 /* ------------------------------------------------------------------ */
 /*  App loading screen: the "hands reaching for Vex" video.            */
 /*  Shows once per browser session when Vex opens, then fades away     */
-/*  when the clip ends. Tap / click / any key skips it.                */
+/*  when the clip ends. (A tap, click or key still skips it quietly.)  */
 /*                                                                      */
 /*  The <video> is written straight into the server HTML (with a real  */
 /*  `muted` attribute), so the browser starts playing it the moment    */
@@ -21,7 +21,7 @@ const MAX_MS = 6500; // never block longer than this, even if the video stalls
 const VIDEO_HTML = `
 <video id="vex-splash-video" autoplay muted playsinline preload="auto" disableremoteplayback
   poster="/videos/vex-loading-poster.jpg"
-  style="position:relative;width:100%;height:100%;object-fit:var(--vex-splash-fit,cover)">
+  style="position:relative;width:100%;height:var(--vex-splash-h,100%);transform:scale(var(--vex-splash-scale,1));object-fit:var(--vex-splash-fit,cover);-webkit-mask-image:var(--vex-splash-mask,none);mask-image:var(--vex-splash-mask,none)">
   <source src="/videos/vex-loading.webm" type="video/webm" />
   <source src="/videos/vex-loading.mp4" type="video/mp4" />
 </video>`;
@@ -35,7 +35,6 @@ export const SPLASH_HEAD_SCRIPT = `try{if(sessionStorage.getItem('${SPLASH_SESSI
 
 export default function SplashScreen() {
   const [show, setShow] = useState(true);
-  const [progress, setProgress] = useState(0);
   const startRef = useRef(Date.now());
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -66,9 +65,7 @@ export default function SplashScreen() {
         v.volume = 0;
       }
     };
-    const onTime = () => v.duration && setProgress(v.currentTime / v.duration);
     v.addEventListener("volumechange", keepSilent);
-    v.addEventListener("timeupdate", onTime);
     v.addEventListener("ended", finish);
     v.addEventListener("error", finish, true);
     if (v.ended) finish();
@@ -78,7 +75,6 @@ export default function SplashScreen() {
     return () => {
       window.clearTimeout(hardStop);
       v.removeEventListener("volumechange", keepSilent);
-      v.removeEventListener("timeupdate", onTime);
       v.removeEventListener("ended", finish);
       v.removeEventListener("error", finish, true);
     };
@@ -113,30 +109,10 @@ export default function SplashScreen() {
           exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           onClick={finish}
-          className="fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden bg-[#e8dcc4] portrait:[--vex-splash-fit:contain]"
+          className="vex-splash fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden"
         >
-          {/* Blurred fill so portrait phones have no empty bands */}
-          <img
-            src="/videos/vex-loading-poster.jpg"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl"
-          />
+          <div className="relative flex h-full w-full items-center" dangerouslySetInnerHTML={{ __html: VIDEO_HTML }} />
 
-          <div className="relative h-full w-full" dangerouslySetInnerHTML={{ __html: VIDEO_HTML }} />
-
-          {/* Bottom: progress + skip hint */}
-          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-6 pb-[max(28px,env(safe-area-inset-bottom))]">
-            <div className="h-[3px] w-40 overflow-hidden rounded-full bg-[#212d3d]/15">
-              <div
-                className="h-full rounded-full bg-[#212d3d]/70 transition-[width] duration-200 ease-linear"
-                style={{ width: `${Math.round(progress * 100)}%` }}
-              />
-            </div>
-            <p className="text-[11px] font-medium tracking-[0.14em] text-[#212d3d]/55 uppercase">
-              Tap to skip
-            </p>
-          </div>
         </motion.div>
       )}
     </AnimatePresence>
