@@ -397,12 +397,18 @@ export default function AlertsView({
             </div>
           ) : (
             <div className="divide-y divide-[#ece5d5]">
-              {visibleAlerts.map((al) => {
+              {[...visibleAlerts].sort((x, y) => (x.group === y.group ? 0 : x.group === "Today" ? -1 : 1)).map((al, idx, arr) => {
                 const isSnoozed = Boolean(snoozedIds[al.id]);
                 const isRead = Boolean(readIds[al.id]);
+                const showGroup = idx === 0 || arr[idx - 1].group !== al.group;
                 return (
+                  <React.Fragment key={al.id}>
+                  {showGroup && (
+                    <p className="pt-4 pb-1 text-[10.5px] font-semibold tracking-[0.14em] text-[#7a705c] uppercase first:pt-0">
+                      {al.group}
+                    </p>
+                  )}
                   <div
-                    key={al.id}
                     className={`flex flex-col justify-between gap-3 py-4 first:pt-1 last:pb-1 md:flex-row md:items-center ${
                       isRead ? "opacity-75" : ""
                     }`}
@@ -484,6 +490,7 @@ export default function AlertsView({
                       </button>
                     </div>
                   </div>
+                  </React.Fragment>
                 );
               })}
             </div>

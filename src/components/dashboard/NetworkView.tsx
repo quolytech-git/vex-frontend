@@ -1,5 +1,6 @@
 "use client";
 
+import { useVexWorkspace } from "@/lib/vex-store";
 import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
@@ -52,6 +53,7 @@ export default function NetworkView({
   contacts,
   onAddContact,
 }: NetworkViewProps) {
+  const { applications } = useVexWorkspace();
   const [activeTab, setActiveTab] = useState<NetworkTab>("all");
   const [artwork, setArtwork] = useState<ArtworkKey>("athens");
   const [sortBy, setSortBy] = useState<SortKey>("pinned");
@@ -606,9 +608,25 @@ export default function NetworkView({
                         </div>
                         <p className="text-[12.5px] text-[#5a6675]">
                           {c.note} ·{" "}
-                          <span className="font-mono text-[11px] text-[#7a6b4e]">
-                            Role: {c.linkedApplication}
-                          </span>
+                          {(() => {
+                            const app = applications.find(
+                              (a) =>
+                                a.company.toLowerCase() === c.company.toLowerCase() ||
+                                c.linkedApplication.toLowerCase().includes(a.title.toLowerCase())
+                            );
+                            return app ? (
+                              <Link
+                                href={`/dashboard/applications/${app.id}`}
+                                className="font-mono text-[11px] font-semibold text-[#212d3d] underline underline-offset-2"
+                              >
+                                Application: {app.title} ›
+                              </Link>
+                            ) : (
+                              <span className="font-mono text-[11px] text-[#7a6b4e]">
+                                Role: {c.linkedApplication}
+                              </span>
+                            );
+                          })()}
                         </p>
                       </div>
 

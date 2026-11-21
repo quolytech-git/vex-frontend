@@ -406,6 +406,12 @@ export default function ResumeEditorPage() {
                       {tpl}
                     </button>
                   ))}
+                  <Link
+                    href="/dashboard/documents/templates"
+                    className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold text-[#212d3d] underline underline-offset-2"
+                  >
+                    More templates ›
+                  </Link>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

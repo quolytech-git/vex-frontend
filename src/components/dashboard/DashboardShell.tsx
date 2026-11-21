@@ -26,6 +26,7 @@ import { GOTO_SECTION_EVENT, announceSection } from "@/components/mobile/Persist
 import { useCloudTransition } from "@/components/PageTransition";
 import { SampleDataBanner, SyncIndicator } from "./kit/Kit";
 import { SectionTopPanels, SectionBottomPanels } from "./kit/SectionPanels";
+import { SprintButton } from "./kit/Sprint";
 import { logEvent } from "@/lib/analytics";
 
 type PillarLabel =
@@ -324,6 +325,8 @@ export default function DashboardShell() {
                 />
               ))}
             </div>
+
+            <SprintButton compact />
 
             <InstallAppButton variant="glass" label="Install app" className="!px-3 !py-1 !text-[11px]" />
 

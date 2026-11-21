@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DashboardSectionId } from "@/data/dashboard";
 import { triggerQuickAction, type QuickAction } from "@/lib/quick-actions";
+import { openSprint } from "@/components/dashboard/kit/Sprint";
 
 export type PrimaryMobileTab =
   | "overview"
@@ -248,6 +249,25 @@ export default function MobileTabBar({
               <p className="px-1.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a705c]">
                 Quick actions
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActionsOpen(false);
+                  openSprint();
+                }}
+                className="mb-2 flex w-full cursor-pointer items-center gap-3 rounded-[20px] bg-[#212d3d] px-4 py-3 text-left text-[#faf6ed] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform active:scale-[0.98]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#e3cea0] text-[#212d3d]">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+                  </svg>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14px] font-semibold">24h Sprint</span>
+                  <span className="block text-[11.5px] text-[#faf6ed]/70">Interview-ready in 7 guided steps</span>
+                </span>
+                <span className="text-[#e3cea0]">›</span>
+              </button>
               <div className="grid grid-cols-3 gap-2">
                 {QUICK_ACTIONS.map((a, i) => {
                   const body = (

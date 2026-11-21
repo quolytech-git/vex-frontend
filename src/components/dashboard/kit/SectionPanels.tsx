@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { DashboardSectionId, McpActivityEntry } from "@/data/dashboard";
 import { useVexWorkspace } from "@/lib/vex-store";
 import { logEvent, readEvents, clearEvents, type VexEventRecord } from "@/lib/analytics";
+import { openSprint } from "./Sprint";
 import {
   EmptyState,
   KitButton,
@@ -113,9 +114,14 @@ export function HomeTopPanels({ onNavigate }: { onNavigate: Nav }) {
             </button>
           )}
         </div>
-        <p className="mt-4 text-[11.5px] text-[#faf6ed]/55">
-          {suggestions.length > 1 ? `${suggestions.length - 1} more worth doing today` : "That's everything for now"}
-        </p>
+        <div className="mt-4 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+          <p className="text-[11.5px] text-[#faf6ed]/55">
+            {suggestions.length > 1 ? `${suggestions.length - 1} more worth doing today` : "That's everything for now"}
+          </p>
+          <button type="button" onClick={openSprint} className="cursor-pointer text-[12.5px] font-semibold text-[#e3cea0]">
+            ⚡ 24h Sprint ›
+          </button>
+        </div>
       </section>
 
       {/* 7 readiness questions */}
@@ -1015,7 +1021,29 @@ export function SectionTopPanels({ section, onNavigate }: { section: DashboardSe
     case "jobs":
       return <JobsTrustBar />;
     case "documents":
-      return <AiNotice />;
+      return (
+        <>
+          <AiNotice />
+          <Link
+            href="/dashboard/documents/templates"
+            className="mb-4 flex items-center gap-3 rounded-[16px] border border-[#e3dccb] bg-white px-4 py-3 transition-colors hover:border-[#212d3d]"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-[#212d3d] text-[#e3cea0]">
+              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <rect x="4" y="3" width="7" height="9" rx="1.5" />
+                <rect x="13" y="3" width="7" height="5" rx="1.5" />
+                <rect x="13" y="10" width="7" height="11" rx="1.5" />
+                <rect x="4" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-semibold text-[#212d3d]">Explore CV templates</span>
+              <span className="block truncate text-[12px] text-[#5a6675]">8 ATS-readable layouts, previewed with your own CV</span>
+            </span>
+            <span className="text-[#7a705c]">›</span>
+          </Link>
+        </>
+      );
     case "profile":
       return <ProfileCompleteness onNavigate={onNavigate} />;
     case "learning":

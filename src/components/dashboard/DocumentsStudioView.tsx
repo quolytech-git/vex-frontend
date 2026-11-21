@@ -10,6 +10,7 @@ import type {
 import { CheckIcon } from "@/components/Icons";
 import { GreekTempleWordFrame } from "./IonicColumnDecoration";
 import MobileManuscriptEditor from "@/components/mobile/MobileManuscriptEditor";
+import { downloadWord, printPdf, safeFileName, type ExportDoc } from "@/lib/exportDoc";
 
 interface DocumentsStudioViewProps {
   profile: OnboardingProfileState;
@@ -370,9 +371,38 @@ export default function DocumentsStudioView({
       );
       return;
     }
-    setExportMessage(
-      `Prepared 1-column ATS ${format} package from "${uploadedFileName}" (${wordCount} words).`
-    );
+    const name = candidateName || profile.name || "Vex Candidate";
+    const doc: ExportDoc =
+      activeTab === "cv"
+        ? {
+            fileName: safeFileName(name, "CV"),
+            title: name,
+            subtitle: candidateMeta,
+            headingStyle: template === "classic" ? "sans" : template === "executive" ? "caps" : "serif",
+            center: template === "classic",
+            sections: [
+              { heading: "Profile", lines: [summaryText] },
+              { heading: "Experience", lines: [...diffLines, ...customBullets], bullets: true },
+              { heading: "Skills", lines: [skillsText] },
+            ],
+          }
+        : {
+            fileName: safeFileName(name, "Cover_Letter"),
+            title: name,
+            subtitle: candidateMeta,
+            sections: [{ heading: "Cover letter", lines: coverLetterText.split(/\n\s*\n/) }],
+          };
+    if (format === "DOCX") {
+      downloadWord(doc);
+      setExportMessage(`Downloaded ${doc.fileName}.doc (${wordCount} words) — opens in Word, Pages or Google Docs.`);
+    } else {
+      const ok = printPdf(doc);
+      setExportMessage(
+        ok
+          ? `Opened print view — choose “Save as PDF” to save ${doc.fileName}.pdf.`
+          : "Your browser blocked the print window. Allow pop-ups for Vex and try again."
+      );
+    }
   }
 
   function updateCustomBullet(idx: number, val: string) {

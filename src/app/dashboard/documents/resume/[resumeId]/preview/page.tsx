@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useVexWorkspace } from "@/lib/vex-store";
 import Eyebrow from "@/components/Eyebrow";
 import DashboardSubpageFrame from "@/components/dashboard/DashboardSubpageFrame";
 import { StatusPill } from "@/components/dashboard/StatusBadge";
+import { downloadWord, printPdf, safeFileName, type ExportDoc } from "@/lib/exportDoc";
+import { CHOSEN_TEMPLATE_KEY, CV_TEMPLATES } from "@/data/cvTemplates";
 
 export default function ResumeExportPreviewPage() {
   const params = useParams<{ resumeId: string }>();
@@ -17,37 +19,57 @@ export default function ResumeExportPreviewPage() {
   );
   const [exportStatus, setExportStatus] = useState("");
 
-  function downloadFile(format: "doc" | "txt") {
-    const plainText = [
-      doc.personalInfo.fullName,
-      `${doc.personalInfo.headline} | ${doc.personalInfo.email} | ${doc.personalInfo.location}`,
-      "",
-      "SUMMARY",
-      doc.summary,
-      "",
-      "EXPERIENCE",
-      ...doc.experience.flatMap((e) => [
-        `${e.role} — ${e.company} (${e.period})`,
-        ...e.bullets.map((b) => `• ${b}`),
-        "",
-      ]),
-      "EDUCATION",
-      ...doc.education.map((ed) => `${ed.degree}, ${ed.institution} (${ed.year})`),
-      "",
-      "SKILLS",
-      doc.skills.join(" · "),
-    ].join("\n");
+  // The template picked in the gallery (if it matches this layout) sets colour & headings.
+  const [chosenId, setChosenId] = useState("");
+  useEffect(() => {
+    try {
+      setChosenId(localStorage.getItem(CHOSEN_TEMPLATE_KEY) || "");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const styleTpl =
+    CV_TEMPLATES.find((t) => t.id === chosenId && t.base === template) ||
+    CV_TEMPLATES.find((t) => t.base === template)!;
 
-    const blob = new Blob([plainText], {
-      type: format === "doc" ? "application/msword" : "text/plain;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${doc.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setExportStatus(`Downloaded ${a.download} cleanly from browser.`);
+  function buildDoc(): ExportDoc {
+    const sec: Record<string, ExportDoc["sections"][number]> = {
+      Summary: { heading: "Summary", lines: [doc.summary] },
+      Profile: { heading: "Profile", lines: [doc.summary] },
+      "Key results": { heading: "Key results", lines: doc.experience.flatMap((e) => e.bullets).slice(0, 3), bullets: true },
+      Experience: {
+        heading: "Experience",
+        lines: doc.experience.flatMap((e) => [`${e.role} — ${e.company} (${e.period})`, ...e.bullets.filter(Boolean).map((b) => `• ${b}`)]),
+      },
+      Skills: { heading: "Skills", lines: [doc.skills.join(" · ")] },
+      Education: { heading: "Education", lines: doc.education.map((ed) => `${ed.degree}, ${ed.institution} (${ed.year})`) },
+      Projects: { heading: "Projects", lines: doc.projects.map((p) => `${p.title} — ${p.detail}`), bullets: true },
+      Research: { heading: "Research", lines: doc.certifications, bullets: true },
+    };
+    return {
+      fileName: safeFileName(doc.personalInfo.fullName || doc.name, "CV"),
+      title: doc.personalInfo.fullName || doc.name,
+      subtitle: [doc.personalInfo.headline, doc.personalInfo.email, doc.personalInfo.location].filter(Boolean).join(" · "),
+      accent: styleTpl.accent,
+      headingStyle: styleTpl.headingFont,
+      center: styleTpl.align === "center",
+      sections: styleTpl.sections.map((k) => sec[k]).filter(Boolean),
+    };
+  }
+
+  function downloadFile() {
+    const d = buildDoc();
+    downloadWord(d);
+    setExportStatus(`Downloaded ${d.fileName}.doc in the ${styleTpl.name} style.`);
+  }
+
+  function savePdf() {
+    const d = buildDoc();
+    setExportStatus(
+      printPdf(d)
+        ? `Print view opened — choose “Save as PDF” to save ${d.fileName}.pdf.`
+        : "Your browser blocked the print window. Allow pop-ups for Vex and try again."
+    );
   }
 
   return (
@@ -85,20 +107,24 @@ export default function ResumeExportPreviewPage() {
 
             <button
               type="button"
-              onClick={() => {
-                if (typeof window !== "undefined") window.print();
-              }}
+              onClick={savePdf}
               className="cursor-pointer rounded-full bg-[#212d3d] px-4 py-1.5 text-[12px] font-medium text-[#faf6ed]"
             >
               Print / Save PDF
             </button>
             <button
               type="button"
-              onClick={() => downloadFile("doc")}
+              onClick={downloadFile}
               className="cursor-pointer rounded-full border border-[#212d3d] bg-white px-4 py-1.5 text-[12px] font-medium text-[#212d3d]"
             >
               Export Word (.doc)
             </button>
+            <Link
+              href="/dashboard/documents/templates"
+              className="rounded-full border border-[#cfc2a5] bg-white px-4 py-1.5 text-[12px] font-medium text-[#212d3d]"
+            >
+              Templates · {styleTpl.name}
+            </Link>
             <Link
               href={`/dashboard/documents/resume/${doc.id}`}
               className="rounded-full border border-[#cfc2a5] bg-[#faf6ed] px-4 py-1.5 text-[12px] font-medium text-[#212d3d]"

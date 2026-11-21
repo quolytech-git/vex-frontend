@@ -44,6 +44,7 @@ export default function MobileHeader({
       items: [
         { label: "Resume Studio", sub: "Leonardo da Vinci", section: "documents" },
         { label: "Full CV Editor", sub: "Structured sections & ATS", href: "/dashboard/documents/resume/res-main" },
+        { label: "CV Templates", sub: "Browse 8 layouts with your CV", href: "/dashboard/documents/templates" },
         { label: "Cover Letter Studio", sub: "Cicero rhetorical atelier", href: "/dashboard/documents/cover-letters" },
       ],
     },
