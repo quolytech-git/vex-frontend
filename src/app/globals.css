@@ -394,3 +394,8 @@ body {
 .vex-glass-btn:active {
   transform: scale(0.92);
 }
+
+/* Loading splash: hidden before first paint when already seen this session. */
+html[data-splash="off"] #vex-splash {
+  display: none !important;
+}

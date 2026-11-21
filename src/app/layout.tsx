@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { InstallAppProvider } from "@/components/InstallApp";
-import SplashScreen from "@/components/SplashScreen";
+import SplashScreen, { SPLASH_HEAD_SCRIPT } from "@/components/SplashScreen";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -31,8 +31,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_HEAD_SCRIPT }} />
+        <link rel="preload" as="image" href="/videos/vex-loading-poster.jpg" fetchPriority="high" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

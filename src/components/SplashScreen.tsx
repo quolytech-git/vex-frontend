@@ -7,42 +7,81 @@ import { AnimatePresence, motion } from "framer-motion";
 /*  App loading screen: the "hands reaching for Vex" video.            */
 /*  Shows once per browser session when Vex opens, then fades away     */
 /*  when the clip ends. Tap / click / any key skips it.                */
+/*                                                                      */
+/*  The <video> is written straight into the server HTML (with a real  */
+/*  `muted` attribute), so the browser starts playing it the moment    */
+/*  the page arrives — before any JavaScript has loaded.               */
 /* ------------------------------------------------------------------ */
 
-const SESSION_KEY = "vex_splash_seen";
+export const SPLASH_SESSION_KEY = "vex_splash_seen";
 const MIN_MS = 1200; // never flash for less than this
 const MAX_MS = 6500; // never block longer than this, even if the video stalls
+
+// Plain HTML so `muted autoplay playsinline` reach the browser exactly as written.
+const VIDEO_HTML = `
+<video id="vex-splash-video" autoplay muted playsinline preload="auto" disableremoteplayback
+  poster="/videos/vex-loading-poster.jpg"
+  style="position:relative;width:100%;height:100%;object-fit:var(--vex-splash-fit,cover)">
+  <source src="/videos/vex-loading.webm" type="video/webm" />
+  <source src="/videos/vex-loading.mp4" type="video/mp4" />
+</video>`;
+
+/**
+ * Runs in <head> before the page paints: if the splash was already seen this
+ * session (or reduced motion is on), mark <html> so CSS hides it instantly —
+ * no flash on reloads.
+ */
+export const SPLASH_HEAD_SCRIPT = `try{if(sessionStorage.getItem('${SPLASH_SESSION_KEY}')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-splash','off')}}catch(e){}`;
 
 export default function SplashScreen() {
   const [show, setShow] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const startRef = useRef(0);
+  const startRef = useRef(Date.now());
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  // Decide on mount: skip if already seen this session or reduced motion is on.
   useEffect(() => {
-    setMounted(true);
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch {
-      /* storage blocked — just show it */
-    }
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen || reduced) {
+    if (document.documentElement.getAttribute("data-splash") === "off") {
+      (document.getElementById("vex-splash-video") as HTMLVideoElement | null)?.pause();
       setShow(false);
       return;
     }
     try {
-      sessionStorage.setItem(SESSION_KEY, "1");
+      sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
     } catch {
       /* ignore */
     }
-    startRef.current = Date.now();
     document.documentElement.style.overflow = "hidden";
+
+    const v = document.getElementById("vex-splash-video") as HTMLVideoElement | null;
+    if (!v) {
+      setShow(false);
+      return;
+    }
+    // Belt and braces: keep it silent no matter what.
+    v.muted = true;
+    v.volume = 0;
+    const keepSilent = () => {
+      if (!v.muted || v.volume > 0) {
+        v.muted = true;
+        v.volume = 0;
+      }
+    };
+    const onTime = () => v.duration && setProgress(v.currentTime / v.duration);
+    v.addEventListener("volumechange", keepSilent);
+    v.addEventListener("timeupdate", onTime);
+    v.addEventListener("ended", finish);
+    v.addEventListener("error", finish, true);
+    if (v.ended) finish();
+    else v.play().catch(() => {}); // in case autoplay was deferred
+
     const hardStop = window.setTimeout(() => setShow(false), MAX_MS);
-    return () => window.clearTimeout(hardStop);
+    return () => {
+      window.clearTimeout(hardStop);
+      v.removeEventListener("volumechange", keepSilent);
+      v.removeEventListener("timeupdate", onTime);
+      v.removeEventListener("ended", finish);
+      v.removeEventListener("error", finish, true);
+    };
   }, []);
 
   // Release scroll and listen for skip keys while visible.
@@ -65,60 +104,26 @@ export default function SplashScreen() {
     <AnimatePresence>
       {show && (
         <motion.div
+          ref={rootRef}
+          id="vex-splash"
           key="vex-splash"
           role="dialog"
           aria-label="Loading Vex"
-          initial={{ opacity: 1 }}
+          initial={false}
           exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           onClick={finish}
-          className="fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden bg-[#e8dcc4]"
+          className="fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden bg-[#e8dcc4] portrait:[--vex-splash-fit:contain]"
         >
           {/* Blurred fill so portrait phones have no empty bands */}
           <img
-            src="/images/vex-creation.png"
+            src="/videos/vex-loading-poster.jpg"
             alt=""
             aria-hidden="true"
             className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl"
           />
 
-          {/* Rendered only in the browser so `muted` is applied before playback
-              (React drops the muted attribute from server HTML). */}
-          {mounted && (
-          <video
-            ref={(el) => {
-              videoRef.current = el;
-              if (el) {
-                el.muted = true;
-                el.defaultMuted = true;
-                el.volume = 0;
-                el.setAttribute("muted", "");
-              }
-            }}
-            src="/videos/vex-loading.mp4"
-            poster="/images/vex-creation.png"
-            autoPlay
-            muted
-            playsInline
-            disableRemotePlayback
-            preload="auto"
-            onVolumeChange={(e) => {
-              // Never allow sound, even if something tries to unmute it.
-              const v = e.currentTarget;
-              if (!v.muted || v.volume > 0) {
-                v.muted = true;
-                v.volume = 0;
-              }
-            }}
-            onEnded={finish}
-            onError={finish}
-            onTimeUpdate={(e) => {
-              const v = e.currentTarget;
-              if (v.duration) setProgress(v.currentTime / v.duration);
-            }}
-            className="relative h-full w-full object-cover portrait:h-auto portrait:object-contain"
-          />
-          )}
+          <div className="relative h-full w-full" dangerouslySetInnerHTML={{ __html: VIDEO_HTML }} />
 
           {/* Bottom: progress + skip hint */}
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-6 pb-[max(28px,env(safe-area-inset-bottom))]">
