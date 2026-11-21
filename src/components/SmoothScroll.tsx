@@ -11,12 +11,16 @@ export default function SmoothScroll({
 }) {
   const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
+  const inDashboard = pathname.startsWith("/dashboard");
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    if (prefersReducedMotion) return;
+    // Native scrolling on touch devices and in the dashboard: smooth-scroll
+    // libraries fight finger scrolling and the app's own scroll jumps.
+    const touch = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+    if (prefersReducedMotion || touch || inDashboard) return;
 
     const lenis = new Lenis({
       duration: 1.15,
@@ -57,7 +61,7 @@ export default function SmoothScroll({
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, []);
+  }, [inDashboard]);
 
   useEffect(() => {
     const lenis = lenisRef.current;
@@ -78,6 +82,7 @@ export default function SmoothScroll({
 
     lenis.scrollTo(0, { immediate: true });
   }, [pathname]);
+
 
   return <>{children}</>;
 }

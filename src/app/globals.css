@@ -424,3 +424,24 @@ html {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+/* Phone scrolling performance: lighter blur on sticky/fixed glass, native momentum,
+   and no scroll chaining from the page into the browser (no rubber-band jump). */
+@media (max-width: 1023.98px) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  .vex-glass-bar {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    background: rgba(246, 241, 230, 0.9);
+  }
+  .vex-glass {
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+  }
+  .vex-app main {
+    overflow-anchor: none;
+  }
+}

@@ -106,8 +106,8 @@ export default function SplashScreen() {
           role="dialog"
           aria-label="Loading Vex"
           initial={false}
-          exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
           onClick={finish}
           className="vex-splash fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden"
         >

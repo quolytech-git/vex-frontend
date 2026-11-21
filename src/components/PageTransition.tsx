@@ -16,8 +16,9 @@ import { AnimatePresence, motion } from "framer-motion";
 
 type Phase = "idle" | "closing" | "closed" | "opening";
 
-const CLOSE_S = 0.42;
-const OPEN_S = 0.55;
+const IS_PHONE = typeof window !== "undefined" && window.matchMedia("(max-width: 1023.98px)").matches;
+const CLOSE_S = IS_PHONE ? 0.3 : 0.42;
+const OPEN_S = IS_PHONE ? 0.38 : 0.55;
 const MAX_WAIT_MS = 2500; // never hold the clouds longer than this
 
 const TIPS = [
@@ -49,7 +50,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     window.clearTimeout(pending.current.timer);
     pending.current = null;
     // A beat so the new page paints under the clouds before they part.
-    window.setTimeout(() => setPhase("opening"), 140);
+    window.setTimeout(() => setPhase("opening"), IS_PHONE ? 60 : 140);
   }, []);
 
   const run = useCallback(
@@ -150,7 +151,7 @@ function Bank({ side, phase }: { side: "left" | "right"; phase: Phase }) {
   const covered = phase === "closing" || phase === "closed";
   return (
     <motion.div
-      className="absolute inset-y-0 w-[64%]"
+      className="absolute inset-y-0 w-[64%] will-change-transform"
       style={{ [side]: 0 } as React.CSSProperties}
       initial={{ x: out }}
       animate={{ x: covered ? "0%" : out }}
