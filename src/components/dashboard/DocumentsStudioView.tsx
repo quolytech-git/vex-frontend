@@ -2,7 +2,6 @@
 
 import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import type {
   CvDiffSuggestion,
   CvQualityFlag,
@@ -564,15 +563,6 @@ export default function DocumentsStudioView({
                 Reset Draft
               </button>
 
-              <Link href="/dashboard/documents/resume/res-main" className={BTN_STONE}>
-                Full CV Editor
-              </Link>
-              <Link href="/dashboard/documents/resume/res-main/preview" className={BTN_STONE}>
-                Print Preview
-              </Link>
-              <Link href="/dashboard/documents/cover-letters" className={BTN_STONE}>
-                Cicero Cover Letters
-              </Link>
               <button
                 type="button"
                 onClick={() => {
