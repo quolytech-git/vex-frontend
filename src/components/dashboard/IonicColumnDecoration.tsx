@@ -1569,7 +1569,7 @@ export function GreekTempleWordFrame({
 
       {/* 2. SANCTUARY CHAMBER — DESKTOP TEMPLE CELL vs CLEAN MOBILE APPLE SURFACE */}
       <div className="relative flex w-full items-stretch bg-transparent px-0 lg:px-[1.1%]">
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex">
           <IonicSidePillar side="left" />
         </div>
 
@@ -1578,7 +1578,7 @@ export function GreekTempleWordFrame({
           {children}
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex">
           <IonicSidePillar side="right" />
         </div>
       </div>
