@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { InstallAppProvider } from "@/components/InstallApp";
+import SplashScreen from "@/components/SplashScreen";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-[#faf6ed] text-[#212d3d] antialiased selection:bg-[#212d3d] selection:text-[#faf6ed]">
         <InstallAppProvider>
+          <SplashScreen />
           <SmoothScroll>
             <Navbar />
             <main>{children}</main>
