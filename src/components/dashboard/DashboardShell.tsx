@@ -5,7 +5,9 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DashboardApplication, DashboardJob, DashboardSectionId } from "@/data/dashboard";
 import { useVexWorkspace } from "@/lib/vex-store";
+import { triggerQuickAction, type QuickAction } from "@/lib/quick-actions";
 import { ArrowRightIcon, VexLogoMark } from "@/components/Icons";
+import { InstallAppButton } from "@/components/InstallApp";
 import DashboardOverview from "./DashboardOverview";
 import JobsDiscoveryView from "./JobsDiscoveryView";
 import ApplicationsTrackerView from "./ApplicationsTrackerView";
@@ -147,6 +149,8 @@ export default function DashboardShell() {
         ].includes(qs)
       ) {
         setSection(qs as DashboardSectionId);
+        const act = new URLSearchParams(window.location.search).get("action");
+        if (act) triggerQuickAction(act as QuickAction);
       }
     } catch {
       // ignore
@@ -309,11 +313,13 @@ export default function DashboardShell() {
               ))}
             </div>
 
+            <InstallAppButton variant="glass" label="Install app" className="!px-3 !py-1 !text-[11px]" />
+
             <Link
-              href="/dashboard/apply"
+              href="/dashboard/extension"
               className="hidden cursor-pointer rounded-full border border-white/60 bg-white/55 px-2.5 py-1 font-mono text-[10.5px] font-medium text-[#212d3d] transition-colors hover:bg-white/85 xl:inline-flex"
             >
-              Vex Apply
+              Extension
             </Link>
 
             <Link

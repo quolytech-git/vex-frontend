@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import type { DashboardApplication } from "@/data/dashboard";
@@ -134,6 +135,7 @@ export default function InterviewPrepView({
   mockSessionsCount,
   onCompleteSession,
 }: InterviewPrepViewProps) {
+  useQuickAction("practice-interview", () => focusField("#interviewprepview-textarea-1"));
   const [selectedAppId, setSelectedAppId] = useState(
     applications.find((a) => a.interviewDate)?.id || applications[0]?.id || ""
   );

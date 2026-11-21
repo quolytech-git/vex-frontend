@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useState } from "react";
 import Link from "next/link";
 import type {
@@ -78,6 +79,7 @@ export default function McpAssistantView({
   onClearActivity,
   onRecordAssistantPlanRun,
 }: McpAssistantViewProps) {
+  useQuickAction("ask-ai", () => focusField("#mcpassistantview-textarea-1"));
   const [assistantInput, setAssistantInput] = useState(
     "Find fresh roles matching my skills, highlight gaps, and draft a clean CV diff for review."
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type {
@@ -218,6 +219,10 @@ export default function DocumentsStudioView({
   const skillsRef = useRef<HTMLInputElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  useQuickAction("tailor-cv", () => {
+    setRightRailTab("ai");
+    aiInputRef.current?.focus();
+  });
 
   const hasBlockedUnsupported = diffs.some(
     (d) => d.hasUnsupportedClaim && d.status !== "rejected"

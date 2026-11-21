@@ -7,11 +7,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SITE_META } from "@/data/palladio";
 import PalladioButton from "./PalladioButton";
 import { VexLogoMark } from "./Icons";
+import { InstallAppButton } from "./InstallApp";
 
 const MENU_LINKS = [
   { label: "Home", href: "/" },
+  { label: "Features", href: "/features" },
+  { label: "Chrome extension", href: "/extension" },
+  { label: "MCP & AI tools", href: "/mcp" },
+  { label: "Get the app", href: "/download" },
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Onboarding", href: "/onboarding" },
   { label: "About", href: "/about" },
   { label: "Cases", href: "/case-studies" },
   { label: "Blog", href: "/blog" },
@@ -92,6 +96,9 @@ export default function Navbar() {
 
         {/* Right Actions: Start free CTA + Circular 42px Menu Toggle */}
         <div className="flex items-center gap-[6px]">
+          <span className="hidden md:block">
+            <InstallAppButton variant="light" />
+          </span>
           <PalladioButton label="Start free" href="/signup" variant="nav" />
 
           <button

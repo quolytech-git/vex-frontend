@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { DashboardSectionId } from "@/data/dashboard";
 import { useVexWorkspace } from "@/lib/vex-store";
 import MobileSheet from "./MobileSheet";
+import { useInstallApp } from "@/components/InstallApp";
 
 interface MobileHeaderProps {
   title: string;
@@ -22,6 +23,7 @@ export default function MobileHeader({
 }: MobileHeaderProps) {
   const { alerts, coachOpen, setCoachOpen, profile } = useVexWorkspace();
   const [moreOpen, setMoreOpen] = useState(false);
+  const install = useInstallApp();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -48,7 +50,8 @@ export default function MobileHeader({
     {
       group: "Execution & Prep",
       items: [
-        { label: "Vex Apply Extension", sub: "Hermes desktop companion", href: "/dashboard/apply" },
+        { label: "Chrome Extension", sub: "Install & autofill applications", href: "/dashboard/extension" },
+        { label: "Vex Apply Review", sub: "Check fields before you submit", href: "/dashboard/apply" },
         { label: "Interview Studio", sub: "Socrates & Marcus sparring", section: "interviews" },
         { label: "Interview Analytics", sub: "Aristotle post-session metrics", href: "/dashboard/interviews/sess-meridian-1/report" },
       ],
@@ -198,6 +201,23 @@ export default function MobileHeader({
         subtitle={`${profile.name || "Candidate"} · Workspace Navigation`}
       >
         <div className="space-y-4">
+          {!install.installed && (
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                install.open();
+              }}
+              className="flex w-full cursor-pointer items-center gap-3 rounded-[18px] bg-[#212d3d] px-4 py-3 text-left text-[#faf6ed]"
+            >
+              <img src="/icons/icon-192.png" alt="" className="h-10 w-10 rounded-[11px]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14px] font-semibold">Get the Vex app</span>
+                <span className="block text-[11.5px] text-[#faf6ed]/70">Add to your home screen in 2 taps</span>
+              </span>
+              <span className="rounded-full bg-[#e3cea0] px-3 py-1 text-[12px] font-semibold text-[#212d3d]">Get</span>
+            </button>
+          )}
           <div className="flex items-center justify-between rounded-[18px] border border-[#dfd4be] bg-white px-4 py-3">
             <div>
               <p className="text-[13.5px] font-medium text-[#212d3d]">

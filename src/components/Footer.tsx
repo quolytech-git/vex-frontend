@@ -15,6 +15,10 @@ import {
 
 const FOOTER_LINKS = [
   { label: "Home", href: "/#header" },
+  { label: "Features", href: "/features" },
+  { label: "Chrome extension", href: "/extension" },
+  { label: "MCP & AI tools", href: "/mcp" },
+  { label: "Get the app", href: "/download" },
   { label: "About", href: "/about" },
   { label: "Case Studies", href: "/case-studies" },
   { label: "Insights", href: "/blog" },

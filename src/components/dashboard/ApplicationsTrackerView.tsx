@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction, focusField } from "@/lib/quick-actions";
 import PhonePortal from "@/components/mobile/PhonePortal";
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -184,6 +185,7 @@ export default function ApplicationsTrackerView({
   >("supported");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  useQuickAction("log-application", () => setShowAddModal(true));
   const [manualCompany, setManualCompany] = useState("");
   const [manualTitle, setManualTitle] = useState("");
   const [manualDeadline, setManualDeadline] = useState("In 5 days");

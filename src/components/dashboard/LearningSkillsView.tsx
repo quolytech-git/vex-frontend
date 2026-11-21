@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction } from "@/lib/quick-actions";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -182,6 +183,10 @@ export default function LearningSkillsView({
 }: LearningSkillsViewProps) {
   // Single active step at a time so first-time users never feel overwhelmed
   const [step, setStep] = useState<LearningStepId>("videos");
+  useQuickAction("learn-skill", () => {
+    setStep("videos");
+    document.querySelector("main")?.scrollIntoView({ behavior: "smooth" });
+  });
 
   // Weekly study tracker state
   const [studyDays, setStudyDays] = useState([

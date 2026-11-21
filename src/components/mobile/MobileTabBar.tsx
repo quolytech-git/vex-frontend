@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DashboardSectionId } from "@/data/dashboard";
+import { triggerQuickAction, type QuickAction } from "@/lib/quick-actions";
 
 export type PrimaryMobileTab =
   | "overview"
@@ -30,18 +31,19 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 const QUICK_ACTIONS: {
+  action: QuickAction;
   section: DashboardSectionId;
   label: string;
   hint: string;
   icon: string;
   tint: string;
 }[] = [
-  { section: "mcp", label: "Ask Vex AI", hint: "Plan & run tasks", icon: "spark", tint: "#b88b32" },
-  { section: "documents", label: "Tailor CV", hint: "Edits & letters", icon: "doc", tint: "#6b5b95" },
-  { section: "applications", label: "Log application", hint: "Track a role", icon: "plus", tint: "#2f6b4f" },
-  { section: "interviews", label: "Practice interview", hint: "2-min drills", icon: "mic", tint: "#9c4930" },
-  { section: "learning", label: "Learn a skill", hint: "Lessons & quiz", icon: "book", tint: "#3f6b8a" },
-  { section: "network", label: "Add contact", hint: "Warm intros", icon: "people", tint: "#5a6675" },
+  { action: "ask-ai", section: "mcp", label: "Ask Vex AI", hint: "Plan & run tasks", icon: "spark", tint: "#b88b32" },
+  { action: "tailor-cv", section: "documents", label: "Tailor CV", hint: "Edits & letters", icon: "doc", tint: "#6b5b95" },
+  { action: "log-application", section: "applications", label: "Log application", hint: "Track a role", icon: "plus", tint: "#2f6b4f" },
+  { action: "practice-interview", section: "interviews", label: "Practice interview", hint: "2-min drills", icon: "mic", tint: "#9c4930" },
+  { action: "learn-skill", section: "learning", label: "Learn a skill", hint: "Lessons & quiz", icon: "book", tint: "#3f6b8a" },
+  { action: "add-contact", section: "network", label: "Add contact", hint: "Warm intros", icon: "people", tint: "#5a6675" },
 ];
 
 function Glyph({ name, className = "h-[22px] w-[22px]", strokeWidth = 1.8 }: { name: string; className?: string; strokeWidth?: number }) {
@@ -266,11 +268,11 @@ export default function MobileTabBar({
                     </motion.span>
                   );
                   return onSelectSection ? (
-                    <button key={a.label} type="button" onClick={() => go(a.section)} className="cursor-pointer">
+                    <button key={a.label} type="button" onClick={() => { triggerQuickAction(a.action); go(a.section); }} className="cursor-pointer">
                       {body}
                     </button>
                   ) : (
-                    <Link key={a.label} href={`/dashboard?section=${a.section}`} onClick={() => setActionsOpen(false)}>
+                    <Link key={a.label} href={`/dashboard?section=${a.section}&action=${a.action}`} onClick={() => setActionsOpen(false)}>
                       {body}
                     </Link>
                   );

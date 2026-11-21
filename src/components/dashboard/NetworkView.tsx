@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction, focusField } from "@/lib/quick-actions";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -56,6 +57,10 @@ export default function NetworkView({
   const [sortBy, setSortBy] = useState<SortKey>("pinned");
   const [query, setQuery] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
+  useQuickAction("add-contact", () => {
+    setComposerOpen(true);
+    window.setTimeout(() => focusField("main form input, main input[placeholder*='ame']"), 150);
+  });
 
   // Interactive per-contact micro-actions
   const [pinnedIds, setPinnedIds] = useState<Record<string, boolean>>({

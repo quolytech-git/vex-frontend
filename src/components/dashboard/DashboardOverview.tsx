@@ -272,7 +272,7 @@ export default function DashboardOverview({
           </Link>
 
           <Link
-            href="/dashboard/apply"
+            href="/dashboard/extension"
             className="flex flex-col items-center gap-1.5"
           >
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#212d3d] shadow-[0_2px_10px_rgba(33,45,61,0.06)]">

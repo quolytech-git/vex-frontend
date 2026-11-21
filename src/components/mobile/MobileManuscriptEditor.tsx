@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuickAction } from "@/lib/quick-actions";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -153,6 +154,7 @@ export default function MobileManuscriptEditor(p: Props) {
   const [draft, setDraft] = useState("");
   const [toast, setToast] = useState("");
   const [aiOpen, setAiOpen] = useState(false);
+  useQuickAction("tailor-cv", () => setAiOpen(true));
   const [auditOpen, setAuditOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
